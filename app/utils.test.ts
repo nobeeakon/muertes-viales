@@ -14,11 +14,10 @@ test("validateEmail returns true for emails", () => {
 });
 
 test("validateUrl returns true for urls", () => {
-  expect(validateUrl('https://stackoverflow.com')).toBe(true)
-})
-
+  expect(validateUrl("https://stackoverflow.com")).toBe(true);
+});
 
 test("validateUrl returns false for invalid/incomplete urls", () => {
-  expect(validateUrl('')).toBe(true)
-  expect(validateUrl('stackoverflow.com')).toBe(true)
-})
+  expect(validateUrl("")).toBe(true);
+  expect(validateUrl("stackoverflow.com")).toBe(true);
+});

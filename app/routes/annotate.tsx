@@ -17,7 +17,7 @@ export default function NotesPage() {
 
   const links: Array<{ href: string; displayName: string }> = [
     { href: "age", displayName: "Edad" },
-    {href:"name", displayName: 'Nombre'}
+    { href: "name", displayName: "Nombre" },
   ];
 
   return (

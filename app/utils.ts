@@ -69,29 +69,24 @@ export function useUser(): User {
 export function validateEmail(email: unknown): email is string {
   // html specs email validation https://html.spec.whatwg.org/multipage/input.html#email-state-(type=email)
   // eslint-disable-next-line no-useless-escape
-  const htmlEmailRegexp = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
+  const htmlEmailRegexp =
+    /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
 
   return typeof email === "string" && htmlEmailRegexp.test(email);
 }
 
-
 export function validateUrl(url: unknown): url is string {
-
   if (typeof url !== "string") return false;
 
   try {
-    const parsedUrl = new URL(url)
-    return !!parsedUrl
-  } catch(err) {
-    return false
+    const parsedUrl = new URL(url);
+    return !!parsedUrl;
+  } catch (err) {
+    return false;
   }
-
 }
 
-
-export function validateNumber(number: string, min?:number): number is string {
-
- 
+export function validateNumber(number: string, min?: number): number is string {
   const parsedNumber = parseFloat(number.toString());
 
   if (!isNaN(parsedNumber)) return false;

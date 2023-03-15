@@ -134,7 +134,7 @@ export default function Age() {
           </label>
         ))}
       </fieldset>
-      <form method="post" >
+      <form method="post">
         <div className="flex justify-around">
           <div>
             <label>
