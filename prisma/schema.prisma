@@ -15,7 +15,11 @@ model User {
   updatedAt DateTime @updatedAt
 
   password Password?
+  
   notes    Note[]
+  noteUrls Note2[]
+
+  annotations Annotation[]
 }
 
 model Password {
@@ -36,3 +40,48 @@ model Note {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String
 }
+
+model Note2 {
+  id String @id @default(cuid())
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String
+
+
+  noteUrls NoteUrl[]
+  annotations Annotation[]
+  validatedAnnotations ValidatedAnnotation[]
+}
+
+model NoteUrl {
+  id String @id @default(cuid())
+  url String
+
+  note2 Note2 @relation(fields: [note2Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  note2Id String
+}
+
+model Annotation {
+  id String @id @default(cuid())
+  propertyName String
+  value String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  userId String
+
+
+  note2 Note2 @relation(fields: [note2Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  note2Id String
+}
+
+model ValidatedAnnotation {
+  id String @id @default(cuid())
+  propertyName String
+  value String
+
+  note2 Note2 @relation(fields: [note2Id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  note2Id String
+}
+
