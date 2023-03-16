@@ -4,6 +4,10 @@ import { prisma } from "~/db.server";
 
 export type { Note2 } from "@prisma/client";
 
+/** 
+ * Adds an annotation, and if is validated adds a validation flag. 
+ * The validation flag is only created once.
+ */
 export async function addAnnotation({
   userId,
   noteId,

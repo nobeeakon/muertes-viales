@@ -38,7 +38,7 @@ export default function NotesPage() {
       </header>
 
       <main className="flex h-full bg-white">
-        <div className="h-full w-80 border-r bg-gray-50">
+        <div className="h-full w-40 border-r bg-gray-50">
           <ol>
             {links.map((linkItem) => (
               <li key={linkItem.href}>

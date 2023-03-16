@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/node";
-import { Form, useLoaderData } from "@remix-run/react";
+import {  useLoaderData } from "@remix-run/react";
 import { requireUserId } from "~/session.server";
 import { Link } from "@remix-run/react";
 
@@ -94,19 +94,24 @@ export async function action({ request }: ActionArgs) {
   });
 }
 
+
 export async function loader({ request, params }: LoaderArgs) {
   const userId = await requireUserId(request);
   const notes = await getNotes();
   const randomNote = await getRandomNote("name", userId);
 
-  return { note: randomNote, totalNotesCount: notes.length };
+
+  return json({ note: randomNote, totalNotesCount: notes.length });
 }
 
 export default function Age() {
   const [urlIndex, setUrlIndex] = useState(0);
   const { note, totalNotesCount } = useLoaderData<typeof loader>();
 
-  if (!note?.id || !note.noteUrls)
+  const noteId = note?.id
+  const noteUrls = note?.noteUrls
+
+  if (!noteId || !noteUrls)
     return (
       <div>
         <p>
@@ -116,13 +121,14 @@ export default function Age() {
       </div>
     );
 
+
   return (
     <div className="h-full">
       <h3>Edad</h3>
       <fieldset>
-        <legend className="float-left">Notas:</legend>
-        {note.noteUrls.map(({ url: urlItem }, index) => (
-          <label key={urlItem}>
+        <legend className="float-left mr-2">Notas:</legend>
+        {noteUrls.map(({ url: urlItem }, index) => (
+          <label key={urlItem} className='mr-2'>
             <input
               name="urls"
               type="radio"
@@ -130,10 +136,11 @@ export default function Age() {
               onChange={(event) => setUrlIndex(parseInt(event.target.value))}
               checked={urlIndex === index}
             />
-            {new URL(urlItem)?.host}
+            {new URL(urlItem).host}
           </label>
         ))}
       </fieldset>
+      <div> Si la nota no se ve: <a href={noteUrls[urlIndex].url} rel="noreferrer"   target='_blank' className="underline decoration-sky-500">Ve la nota en la página</a></div>
       <form method="post">
         <div className="flex justify-around">
           <div>
@@ -144,7 +151,7 @@ export default function Age() {
           </div>
           <div></div>
           <div>
-            <input name="noteId" type="hidden" value={note.id} />
+            <input name="noteId" type="hidden" value={noteId} />
             <button
               type="submit"
               name="actionType"
@@ -165,13 +172,17 @@ export default function Age() {
         </div>
       </form>
       <div className="h-full">
+        {noteUrls.map((noteUrlItem, noteUrlIndex) => 
         <iframe
+        key={noteUrlItem.id}
           sandbox="true"
           width="100%"
           height="100%"
-          title="noticia"
-          src={note.noteUrls[urlIndex].url}
+          title={`noticia-${noteUrlIndex}`}
+          src={noteUrlItem.url}
+          style={(noteUrlIndex === urlIndex)?{position:'relative', width:'1px', height:'1px', left:'-1000%'}:{}} // move the iframe so is not visible yet it loads the iframe
         ></iframe>
+          )}
       </div>
     </div>
   );

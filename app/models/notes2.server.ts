@@ -100,5 +100,8 @@ export async function getRandomNote(
         notIn: [...validatedNoteIds, ...userAnnotatedNoteIds],
       },
     },
+    orderBy: {
+      createdAt: 'asc'
+    }
   });
 }
