@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/node";
-import {  useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { requireUserId } from "~/session.server";
 import { Link } from "@remix-run/react";
 
@@ -94,12 +94,10 @@ export async function action({ request }: ActionArgs) {
   });
 }
 
-
 export async function loader({ request, params }: LoaderArgs) {
   const userId = await requireUserId(request);
   const notes = await getNotes();
   const randomNote = await getRandomNote("name", userId);
-
 
   return json({ note: randomNote, totalNotesCount: notes.length });
 }
@@ -108,8 +106,8 @@ export default function Age() {
   const [urlIndex, setUrlIndex] = useState(0);
   const { note, totalNotesCount } = useLoaderData<typeof loader>();
 
-  const noteId = note?.id
-  const noteUrls = note?.noteUrls
+  const noteId = note?.id;
+  const noteUrls = note?.noteUrls;
 
   if (!noteId || !noteUrls)
     return (
@@ -121,14 +119,13 @@ export default function Age() {
       </div>
     );
 
-
   return (
     <div className="h-full">
       <h3>Edad</h3>
       <fieldset>
         <legend className="float-left mr-2">Notas:</legend>
         {noteUrls.map(({ url: urlItem }, index) => (
-          <label key={urlItem} className='mr-2'>
+          <label key={urlItem} className="mr-2">
             <input
               name="urls"
               type="radio"
@@ -140,7 +137,18 @@ export default function Age() {
           </label>
         ))}
       </fieldset>
-      <div> Si la nota no se ve: <a href={noteUrls[urlIndex].url} rel="noreferrer"   target='_blank' className="underline decoration-sky-500">Ve la nota en la página</a></div>
+      <div>
+        {" "}
+        Si la nota no se ve:{" "}
+        <a
+          href={noteUrls[urlIndex].url}
+          rel="noreferrer"
+          target="_blank"
+          className="underline decoration-sky-500"
+        >
+          Ve la nota en la página
+        </a>
+      </div>
       <form method="post">
         <div className="flex justify-around">
           <div>
@@ -172,17 +180,26 @@ export default function Age() {
         </div>
       </form>
       <div className="h-full">
-        {noteUrls.map((noteUrlItem, noteUrlIndex) => 
-        <iframe
-        key={noteUrlItem.id}
-          sandbox="true"
-          width="100%"
-          height="100%"
-          title={`noticia-${noteUrlIndex}`}
-          src={noteUrlItem.url}
-          style={(noteUrlIndex === urlIndex)?{position:'relative', width:'1px', height:'1px', left:'-1000%'}:{}} // move the iframe so is not visible yet it loads the iframe
-        ></iframe>
-          )}
+        {noteUrls.map((noteUrlItem, noteUrlIndex) => (
+          <iframe
+            key={noteUrlItem.id}
+            sandbox="true"
+            width="100%"
+            height="100%"
+            title={`noticia-${noteUrlIndex}`}
+            src={noteUrlItem.url}
+            style={
+              noteUrlIndex === urlIndex
+                ? {
+                    position: "relative",
+                    width: "1px",
+                    height: "1px",
+                    left: "-1000%",
+                  }
+                : {}
+            } // move the iframe so is not visible yet it loads the iframe
+          ></iframe>
+        ))}
       </div>
     </div>
   );

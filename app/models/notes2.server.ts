@@ -101,7 +101,7 @@ export async function getRandomNote(
       },
     },
     orderBy: {
-      createdAt: 'asc'
-    }
+      createdAt: "asc",
+    },
   });
 }
