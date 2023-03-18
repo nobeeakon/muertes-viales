@@ -84,6 +84,7 @@ export async function getRandomNote(
     },
     where: {
       propertyName: property,
+      userId
     },
   });
 

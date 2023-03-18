@@ -113,7 +113,7 @@ export default function Age() {
     return (
       <div>
         <p>
-          No hay más notas por anotar. <Link to="/annotate">Regresar </Link>
+          No hay más notas por anotar. <Link to="/annotate"  className="underline decoration-sky-500">Regresar </Link>
         </p>
         <p>{totalNotesCount} Anotadas </p>
       </div>
@@ -189,14 +189,13 @@ export default function Age() {
             title={`noticia-${noteUrlIndex}`}
             src={noteUrlItem.url}
             style={
-              noteUrlIndex === urlIndex
-                ? {
+              noteUrlIndex === urlIndex?{}
+                : {
                     position: "relative",
                     width: "1px",
                     height: "1px",
                     left: "-1000%",
                   }
-                : {}
             } // move the iframe so is not visible yet it loads the iframe
           ></iframe>
         ))}
