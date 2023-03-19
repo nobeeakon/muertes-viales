@@ -3,12 +3,12 @@ import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import { requireUserId } from "~/session.server";
-import { Link } from "@remix-run/react";
 
 import { addAnnotation } from "~/models/annotations.server";
 import { getNote, getRandomNote, getNotes } from "~/models/notes2.server";
 import { validateNumber } from "~/utils";
 import { validThreshold } from "~/utils/annotations";
+import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
 
 const validOptions = ["child", "young", "adult", "old"];
 const propertyName = "age";
@@ -76,42 +76,25 @@ export async function loader({ request, params }: LoaderArgs) {
 
 export default function Age() {
   const [age, setAge] = useState("");
-  const [urlIndex, setUrlIndex] = useState(0);
   const { note, totalNotesCount } = useLoaderData<typeof loader>();
 
-  if (!note?.id || !note.noteUrls)
+  const noteId = note?.id;
+  const noteUrls = note?.noteUrls;
+
+  if (!noteId || !noteUrls)
     return (
       <div>
-        <p>
-          No hay más notas por anotar. <Link to="/annotate">Regresar </Link>
-        </p>
-        <p>{totalNotesCount} Anotadas </p>
+        <NoMoreToAnnotate totalNotesCount={totalNotesCount} />
       </div>
     );
 
   return (
-    <div className="h-full">
-      <h3>Edad</h3>
-      <fieldset>
-        <legend className="float-left">Notas:</legend>
-        {note.noteUrls.map(({ url: urlItem }, index) => (
-          <label key={urlItem}>
-            <input
-              name="urls"
-              type="radio"
-              value={index}
-              onChange={(event) => setUrlIndex(parseInt(event.target.value))}
-              checked={urlIndex === index}
-            />
-            {new URL(urlItem)?.host}
-          </label>
-        ))}
-      </fieldset>
+    <Annotate title="Edad" noteUrls={noteUrls}>
       <Form method="post">
         <div className="flex justify-around">
           <div>
             <label>
-              Años{" "}
+              Años
               <input
                 type="number"
                 value={age}
@@ -147,15 +130,6 @@ export default function Age() {
           </div>
         </div>
       </Form>
-      <div className="h-full">
-        <iframe
-          sandbox="true"
-          width="100%"
-          height="100%"
-          title="noticia"
-          src={note.noteUrls[urlIndex].url}
-        ></iframe>
-      </div>
-    </div>
+    </Annotate>
   );
 }

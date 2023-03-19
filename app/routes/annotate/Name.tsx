@@ -1,9 +1,7 @@
-import { useState } from "react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { requireUserId } from "~/session.server";
-import { Link } from "@remix-run/react";
 
 import { addAnnotation } from "~/models/annotations.server";
 import { getNote, getRandomNote, getNotes } from "~/models/notes2.server";
@@ -12,6 +10,7 @@ import {
   omitValidThreshold,
   notAvailable,
 } from "~/utils/annotations";
+import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
 
 const propertyName = "name";
 const actionTypes = { annotate: "annotate", NA: "notAvailable" };
@@ -103,7 +102,6 @@ export async function loader({ request, params }: LoaderArgs) {
 }
 
 export default function Age() {
-  const [urlIndex, setUrlIndex] = useState(0);
   const { note, totalNotesCount } = useLoaderData<typeof loader>();
 
   const noteId = note?.id;
@@ -112,43 +110,12 @@ export default function Age() {
   if (!noteId || !noteUrls)
     return (
       <div>
-        <p>
-          No hay más notas por anotar. <Link to="/annotate"  className="underline decoration-sky-500">Regresar </Link>
-        </p>
-        <p>{totalNotesCount} Anotadas </p>
+        <NoMoreToAnnotate totalNotesCount={totalNotesCount} />
       </div>
     );
 
   return (
-    <div className="h-full">
-      <h3>Edad</h3>
-      <fieldset>
-        <legend className="float-left mr-2">Notas:</legend>
-        {noteUrls.map(({ url: urlItem }, index) => (
-          <label key={urlItem} className="mr-2">
-            <input
-              name="urls"
-              type="radio"
-              value={index}
-              onChange={(event) => setUrlIndex(parseInt(event.target.value))}
-              checked={urlIndex === index}
-            />
-            {new URL(urlItem).host}
-          </label>
-        ))}
-      </fieldset>
-      <div>
-        {" "}
-        Si la nota no se ve:{" "}
-        <a
-          href={noteUrls[urlIndex].url}
-          rel="noreferrer"
-          target="_blank"
-          className="underline decoration-sky-500"
-        >
-          Ve la nota en la página
-        </a>
-      </div>
+    <Annotate title="Nombre" noteUrls={noteUrls}>
       <form method="post">
         <div className="flex justify-around">
           <div>
@@ -179,27 +146,6 @@ export default function Age() {
           </div>
         </div>
       </form>
-      <div className="h-full">
-        {noteUrls.map((noteUrlItem, noteUrlIndex) => (
-          <iframe
-            key={noteUrlItem.id}
-            sandbox="true"
-            width="100%"
-            height="100%"
-            title={`noticia-${noteUrlIndex}`}
-            src={noteUrlItem.url}
-            style={
-              noteUrlIndex === urlIndex?{}
-                : {
-                    position: "relative",
-                    width: "1px",
-                    height: "1px",
-                    left: "-1000%",
-                  }
-            } // move the iframe so is not visible yet it loads the iframe
-          ></iframe>
-        ))}
-      </div>
-    </div>
+    </Annotate>
   );
 }
