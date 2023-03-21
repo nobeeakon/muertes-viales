@@ -1,11 +1,37 @@
 import type { User, Note2, NoteUrl } from "@prisma/client";
 
 import { prisma } from "~/db.server";
+import type { FieldsType } from "~/utils/constants";
 
 export type { Note2 } from "@prisma/client";
 
-export function getNotes() {
-  return prisma.note2.findMany();
+export async function getAllValidNotes() {
+  const validatedNotesQueryResult = await prisma.validatedAnnotation.findMany({
+    select: {
+      note2Id: true,
+    },
+    distinct: ["note2Id"],
+  });
+
+  const validatedNoteIds = validatedNotesQueryResult.map(
+    (validatedItem) => validatedItem.note2Id
+  );
+
+  return prisma.note2.findMany({
+    select: {
+      id: true,
+      createdAt: true,
+      userId: true,
+      user: true,
+      validatedAnnotations: true,
+      noteUrls: true,
+    },
+    where: {
+      id: {
+        in: validatedNoteIds,
+      },
+    },
+  });
 }
 
 export function getNote({ id }: Pick<Note2, "id">) {
@@ -59,16 +85,11 @@ export function deleteNote({ id }: Pick<Note2, "id">) {
   });
 }
 
-const options = ["age", "name"] as const;
-
 /**
  * Get a random note not previously annotated by the current user,
  * this is to prevent a single user to annotate multiple times the same note.
  */
-export async function getRandomNote(
-  property: (typeof options)[number],
-  userId: string
-) {
+export async function getRandomNote(property: FieldsType, userId: string) {
   const validatedNotes = await prisma.validatedAnnotation.findMany({
     select: {
       note2Id: true,
@@ -76,6 +97,7 @@ export async function getRandomNote(
     where: {
       propertyName: property,
     },
+    distinct: ["note2Id"],
   });
 
   const userAnnotated = await prisma.annotation.findMany({
@@ -84,8 +106,9 @@ export async function getRandomNote(
     },
     where: {
       propertyName: property,
-      userId
+      userId,
     },
+    distinct: ["note2Id"],
   });
 
   const validatedNoteIds = validatedNotes.map((item) => item.note2Id);

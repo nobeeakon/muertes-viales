@@ -1,17 +1,28 @@
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import { requireUserId } from "~/session.server";
 
 import { addAnnotation } from "~/models/annotations.server";
-import { getNote, getRandomNote, getNotes } from "~/models/notes2.server";
+import { getNote, getRandomNote } from "~/models/notes2.server";
 import { validateNumber } from "~/utils";
-import { validThreshold } from "~/utils/annotations";
 import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
+import {
+  FIELD_NAMES,
+  validThreshold,
+  omitValidThreshold,
+  notAvailable,
+} from "~/utils/constants";
 
-const validOptions = ["child", "young", "adult", "old"];
-const propertyName = "age";
+const propertyName = FIELD_NAMES.victimAge;
+const actionTypes = { annotate: "annotate", NA: "notAvailable" };
+const validOptions = [
+  { value: "child", display: "Niño" },
+  { value: "young", display: "Joven" },
+  { value: "adult", display: "Adulto" },
+  { value: "old", display: "3a edad" },
+];
 
 export async function action({ request }: ActionArgs) {
   const userId = await requireUserId(request);
@@ -19,32 +30,78 @@ export async function action({ request }: ActionArgs) {
 
   const ageString = formData.get(propertyName)?.toString();
   const noteId = formData.get("noteId")?.toString();
+  const actionType = formData.get("actionType")?.toString() ?? "";
 
-  if (!ageString || !noteId) {
+  // valid actions
+  const actionTypesOptions = Object.values(actionTypes);
+  if (!actionTypesOptions.includes(actionType) || !noteId) {
     return json(
       {
         errors: {
-          age: !ageString ? "Age value is required" : "",
-          request: !noteId ? "Invalid request" : "",
+          age: "",
+          request: "Invalid request 1",
+          code: `age-01`,
         },
       },
       { status: 400 }
     );
   }
 
+  // valid note
   const note = await getNote({ id: noteId });
-
   if (!note) {
     return json(
-      { errors: { age: "", request: "Invalid request" } },
+      { errors: { age: "", request: "Invalid request 2", code: `age-02` } },
+      { status: 400 }
+    );
+  }
+
+  // NA
+  if (actionType === actionTypes.NA) {
+    const isOmitValidated =
+      note.annotations.filter(
+        (annotationItem) =>
+          annotationItem.propertyName === propertyName &&
+          annotationItem.value === notAvailable
+      ).length >=
+      omitValidThreshold - 1; // -1 to account for the current annotation
+
+    await addAnnotation({
+      userId,
+      noteId,
+      propertyName: propertyName,
+      value: notAvailable,
+      isValidated: isOmitValidated,
+    });
+
+    return json(
+      { errors: { age: "", request: "", code: `age-03` } },
+      { status: 200 }
+    );
+  }
+
+  if (!ageString) {
+    return json(
+      {
+        errors: {
+          age: "Age value is required",
+          request: "",
+          code: `age-04`,
+        },
+      },
       { status: 400 }
     );
   }
 
   // check valid inputs
-  if (!validOptions.includes(ageString) && !validateNumber(ageString, 0)) {
+  if (
+    !validOptions.map((validItem) => validItem.value).includes(ageString) &&
+    !validateNumber(ageString, 0)
+  ) {
     return json(
-      { errors: { age: "Age value is invalid", request: "" } },
+      {
+        errors: { age: "Age value is invalid 4", request: "", code: `age-05` },
+      },
       { status: 400 }
     );
   }
@@ -57,26 +114,29 @@ export async function action({ request }: ActionArgs) {
     ).length >=
     validThreshold - 1; // -1 to account for the current annotation
 
-  return addAnnotation({
+  await addAnnotation({
     userId,
     noteId,
-    propertyName,
+    propertyName: propertyName,
     value: ageString,
     isValidated,
   });
+
+  return json({ errors: { age: "", request: "", code: "" } }, { status: 200 });
 }
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request);
-  const notes = await getNotes();
-  const randomNote = await getRandomNote("age", userId);
+  const randomNote = await getRandomNote(propertyName, userId);
 
-  return { note: randomNote, totalNotesCount: notes.length };
+  console.log("hola", randomNote);
+
+  return json({ note: randomNote });
 }
 
 export default function Age() {
   const [age, setAge] = useState("");
-  const { note, totalNotesCount } = useLoaderData<typeof loader>();
+  const { note } = useLoaderData<typeof loader>();
 
   const noteId = note?.id;
   const noteUrls = note?.noteUrls;
@@ -84,52 +144,69 @@ export default function Age() {
   if (!noteId || !noteUrls)
     return (
       <div>
-        <NoMoreToAnnotate totalNotesCount={totalNotesCount} />
+        <NoMoreToAnnotate />
       </div>
     );
 
   return (
-    <Annotate title="Edad" noteUrls={noteUrls}>
-      <Form method="post">
-        <div className="flex justify-around">
-          <div>
+    <Annotate title="Edad de la víctima" noteUrls={noteUrls}>
+      <div className="flex flex-wrap items-baseline justify-between gap-1">
+        <div className="mr-2 flex  flex-wrap items-baseline gap-1">
+          <div className="mr-3">
             <label>
               Años
               <input
+                className="ml-2 rounded border border-gray-500 px-1 py-1"
                 type="number"
                 value={age}
+                autoFocus
                 onChange={(event) => setAge(event.target.value)}
               />
             </label>
           </div>
-          <div>
-            <fieldset>
-              <legend className="float-left">Opciones:</legend>
-              {validOptions.map((optionItem) => (
-                <Fragment key={optionItem}>
-                  <input
-                    type="radio"
-                    id={`radio-${optionItem}`}
-                    checked={age === optionItem}
-                    onChange={() => setAge(optionItem)}
-                  />
-                  <label htmlFor={`radio-${optionItem}`}>{optionItem}</label>
-                </Fragment>
-              ))}
-            </fieldset>
+          <div className="mr-2 flex" role="group" aria-labelledby="age-options">
+            <div className="mr-2" id="age-options">
+              Opciones:
+            </div>
+            {validOptions.map((optionItem) => (
+              <label key={optionItem.value} className="mr-1">
+                <input
+                  type="radio"
+                  checked={age === optionItem.value}
+                  onChange={() => setAge(optionItem.value)}
+                />
+
+                {optionItem.display}
+              </label>
+            ))}
           </div>
-          <div>
-            <input name={propertyName} type="hidden" value={age} />
-            <input name="noteId" type="hidden" value={note.id} />
+          <Form replace reloadDocument method="post">
+            <input name={propertyName} type="hidden" required value={age} />
+            <input name="noteId" type="hidden" required value={note.id} />
             <button
               type="submit"
-              className="rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
+              name="actionType"
+              value={actionTypes.annotate}
+              disabled={!age.trim()}
+              className="rounded bg-blue-500  py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400"
             >
-              Save
+              Guardar
             </button>
-          </div>
+          </Form>
         </div>
-      </Form>
+        <Form replace reloadDocument method="post">
+          <input name="noteId" type="hidden" required value={note.id} />
+
+          <button
+            type="submit"
+            name="actionType"
+            value={actionTypes.NA}
+            className="py-2 px-4"
+          >
+            No dice
+          </button>
+        </Form>
+      </div>
     </Annotate>
   );
 }

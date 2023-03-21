@@ -1,6 +1,7 @@
 import type { User, Note2, Annotation } from "@prisma/client";
 
 import { prisma } from "~/db.server";
+import type { FieldsType } from "~/utils/constants";
 
 export type { Note2 } from "@prisma/client";
 
@@ -17,7 +18,7 @@ export async function addAnnotation({
 }: {
   userId: User["id"];
   noteId: Note2["id"];
-  propertyName: Annotation["propertyName"];
+  propertyName: FieldsType;
   value: Annotation["value"];
   isValidated: boolean;
 }) {
@@ -47,7 +48,7 @@ export async function addAnnotation({
 
   return prisma.annotation.create({
     data: {
-      propertyName,
+      propertyName: propertyName,
       value,
       user: {
         connect: {
