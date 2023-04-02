@@ -74,6 +74,7 @@ const MONTHS: Record<number, { month: string; days: number }> = {
 };
 const YEARS = [2018, 2019, 2020, 2021, 2022, 2023];
 
+/** builds a date string as 'yyyy-mm-dd' */
 const buildYMDString = (year: string, month: string, day: string) => {
   const monthString = month.padStart(2, "0");
   const dayString = day.padStart(2, "0");
