@@ -16,6 +16,7 @@ export default function NotesPage() {
   const user = useUser();
 
   const links: Array<{ href: string; displayName: string }> = [
+    { href: "date", displayName: "Fecha" },
     { href: "age", displayName: "Edad" },
     { href: "name", displayName: "Nombre" },
     { href: "addNote", displayName: "+ Agregar" },

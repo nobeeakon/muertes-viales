@@ -39,7 +39,7 @@ export async function action({ request }: ActionArgs) {
       {
         errors: {
           age: "",
-          request: "Invalid request 1",
+          request: "Invalid request",
           code: `age-01`,
         },
       },
@@ -51,7 +51,7 @@ export async function action({ request }: ActionArgs) {
   const note = await getNote({ id: noteId });
   if (!note) {
     return json(
-      { errors: { age: "", request: "Invalid request 2", code: `age-02` } },
+      { errors: { age: "", request: "Invalid request", code: `age-02` } },
       { status: 400 }
     );
   }
@@ -100,7 +100,7 @@ export async function action({ request }: ActionArgs) {
   ) {
     return json(
       {
-        errors: { age: "Age value is invalid 4", request: "", code: `age-05` },
+        errors: { age: "Age value is invalid", request: "", code: `age-05` },
       },
       { status: 400 }
     );
@@ -129,7 +129,6 @@ export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request);
   const randomNote = await getRandomNote(propertyName, userId);
 
-  console.log("hola", randomNote);
 
   return json({ note: randomNote });
 }

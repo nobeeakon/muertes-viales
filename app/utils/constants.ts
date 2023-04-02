@@ -2,6 +2,7 @@ export const FIELD_NAMES = {
   victimAge: "victimAge",
   victimName: "victimName",
   victimSex: "victimSex",
+  noteDate: 'noteDate',
 } as const;
 
 export type FieldsType = keyof typeof FIELD_NAMES;
