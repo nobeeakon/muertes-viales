@@ -76,7 +76,7 @@ export function validateEmail(email: unknown): email is string {
 }
 
 export function validateUrl(url: unknown): url is string {
-  if (typeof url !== "string") return false;
+  if (typeof url !== "string" || url.length === 0) return false;
 
   try {
     const parsedUrl = new URL(url);
@@ -87,9 +87,9 @@ export function validateUrl(url: unknown): url is string {
 }
 
 export function validateNumber(number: string, min?: number): number is string {
-  const parsedNumber = parseFloat(number.toString());
+  const parsedNumber = parseFloat(number);
 
-  if (!isNaN(parsedNumber)) return false;
+  if (isNaN(parsedNumber)) return false;
   if (min !== undefined && parsedNumber < min) return false;
 
   return true;
