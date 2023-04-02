@@ -98,7 +98,7 @@ export async function action({ request }: ActionArgs) {
       {
         errors: {
           date: "",
-          request: "Invalid request 1",
+          request: "Invalid request",
           code: `date-01`,
         },
       },
@@ -110,7 +110,7 @@ export async function action({ request }: ActionArgs) {
   const note = await getNote({ id: noteId });
   if (!note) {
     return json(
-      { errors: { date: "", request: "Invalid request 2", code: `date-02` } },
+      { errors: { date: "", request: "Invalid request", code: `date-02` } },
       { status: 400 }
     );
   }
@@ -191,7 +191,7 @@ export async function action({ request }: ActionArgs) {
     isValidated,
   });
 
-  return json({ errors: { age: "", request: "", code: "" } }, { status: 200 });
+  return json({ errors: { date: "", request: "", code: "" } }, { status: 200 });
 }
 
 export async function loader({ request }: LoaderArgs) {

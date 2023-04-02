@@ -19,6 +19,7 @@ export default function NotesPage() {
     { href: "date", displayName: "Fecha" },
     { href: "age", displayName: "Edad" },
     { href: "name", displayName: "Nombre" },
+    { href: "coordinates", displayName: "Ubicación" },
     { href: "addNote", displayName: "+ Agregar" },
   ];
 
