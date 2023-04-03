@@ -7,17 +7,12 @@ import { requireUserId } from "~/session.server";
 import { addAnnotation } from "~/models/annotations.server";
 import { getNote, getRandomNote } from "~/models/notes2.server";
 import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
-import {
-  FIELD_NAMES,
-  validThreshold,
-  omitValidThreshold,
-  notAvailable,
-} from "~/utils/constants";
+import { FIELD_NAMES, validThreshold } from "~/utils/constants";
 import { getGoogleMapsCoordiantes, haversineDistance } from "~/utils/utils";
 import { validateNumber, validateUrl } from "~/utils";
+import { omitFieldNames } from "./omit";
 
 const propertyName = FIELD_NAMES.coordinates;
-const actionTypes = { annotate: "annotate", NA: "notAvailable" };
 const inputNames = {
   googleMapsUrl: "googleMapsUrl",
   latitude: "latitude",
@@ -74,16 +69,18 @@ export async function action({ request }: ActionArgs) {
   const latitudeString = formData.get(inputNames.latitude)?.toString();
   const longitudeString = formData.get(inputNames.longitude)?.toString();
   const noteId = formData.get("noteId")?.toString();
-  const actionType = formData.get("actionType")?.toString() ?? "";
 
-  // valid actions
-  const actionTypesOptions = Object.values(actionTypes);
-  if (!actionTypesOptions.includes(actionType) || !noteId) {
+  // required input
+  const hasIncompleteInfo =
+    !latitudeString || !longitudeString || !googleMapsUrlString;
+  if (!noteId || hasIncompleteInfo) {
     return json(
       {
         errors: {
-          coordinates: "",
-          request: "Invalid request",
+          coordinates: hasIncompleteInfo
+            ? "Coordinates information is required"
+            : "",
+          request: !noteId ? "Invalid request" : "",
           code: `coordinates-01`,
         },
       },
@@ -106,43 +103,6 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  // NA
-  if (actionType === actionTypes.NA) {
-    const isOmitValidated =
-      note.annotations.filter(
-        (annotationItem) =>
-          annotationItem.propertyName === propertyName &&
-          annotationItem.value === notAvailable
-      ).length >=
-      omitValidThreshold - 1; // -1 to account for the current annotation
-
-    await addAnnotation({
-      userId,
-      noteId,
-      propertyName: propertyName,
-      value: notAvailable,
-      isValidated: isOmitValidated,
-    });
-
-    return json(
-      { errors: { coordinates: "", request: "", code: `coordinates-03` } },
-      { status: 200 }
-    );
-  }
-
-  if (!latitudeString || !longitudeString || !googleMapsUrlString) {
-    return json(
-      {
-        errors: {
-          coordinates: "Coordinates value is required",
-          request: "",
-          code: `coordinates-04`,
-        },
-      },
-      { status: 400 }
-    );
-  }
-
   // check valid inputs
   if (
     !validateNumber(latitudeString) ||
@@ -154,7 +114,7 @@ export async function action({ request }: ActionArgs) {
         errors: {
           coordinates: "Coordinates value is invalid",
           request: "",
-          code: `coordinates-05`,
+          code: `coordinates-03`,
         },
       },
       { status: 400 }
@@ -247,7 +207,7 @@ export default function Age() {
     );
 
   return (
-    <Annotate title="Edad de la víctima" noteUrls={noteUrls}>
+    <Annotate title="Ubicación" noteUrls={noteUrls}>
       <div className="flex flex-wrap items-baseline justify-between gap-1">
         <div className="mr-2 flex  flex-wrap items-baseline gap-1">
           <div className="mr-3 flex flex-wrap items-baseline gap-2">
@@ -272,8 +232,6 @@ export default function Age() {
 
               <button
                 type="submit"
-                name="actionType"
-                value={actionTypes.annotate}
                 disabled={!coordinates.latitude || !coordinates.longitude}
                 className="ml-2 rounded  bg-blue-500 py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400"
               >
@@ -313,15 +271,21 @@ export default function Age() {
             </Form>
           </div>
         </div>
-        <Form replace reloadDocument method="post">
-          <input name="noteId" type="hidden" required value={note.id} />
+        <Form replace reloadDocument method="post" action="/annotate/omit">
+          <input
+            value={note.id}
+            name={omitFieldNames.noteId}
+            type="hidden"
+            required
+          />
+          <input
+            value={propertyName}
+            name={omitFieldNames.propertyName}
+            type="hidden"
+            required
+          />
 
-          <button
-            type="submit"
-            name="actionType"
-            value={actionTypes.NA}
-            className="py-2 px-4"
-          >
+          <button type="submit" className="py-2 px-4">
             No dice
           </button>
         </Form>

@@ -6,33 +6,26 @@ import { requireUserId } from "~/session.server";
 
 import { addAnnotation } from "~/models/annotations.server";
 import { getNote, getRandomNote } from "~/models/notes2.server";
-import {
-  FIELD_NAMES,
-  validThreshold,
-  omitValidThreshold,
-  notAvailable,
-} from "~/utils/constants";
+import { FIELD_NAMES, validThreshold } from "~/utils/constants";
 import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
+import { omitFieldNames } from "./omit";
 
 const propertyName = FIELD_NAMES.victimName;
-const actionTypes = { annotate: "annotate", NA: "notAvailable" };
 
 export async function action({ request }: ActionArgs) {
   const userId = await requireUserId(request);
   const formData = await request.formData();
 
   const nameString = (formData.get(propertyName)?.toString() ?? "").trim();
-  const actionType = formData.get("actionType")?.toString() ?? "";
   const noteId = formData.get("noteId")?.toString();
 
-  // valid actions
-  const actionTypesOptions = Object.values(actionTypes);
-  if (!actionTypesOptions.includes(actionType) || !noteId) {
+  // required input
+  if (!noteId || !nameString) {
     return json(
       {
         errors: {
-          name: "",
-          request: "Invalid request",
+          name: !nameString ? "Name is required" : "",
+          request: !noteId ? "Invalid request" : "",
           code: `name-01`,
         },
       },
@@ -45,44 +38,6 @@ export async function action({ request }: ActionArgs) {
   if (!note) {
     return json(
       { errors: { name: "", request: "Invalid request", code: `name-02` } },
-      { status: 400 }
-    );
-  }
-
-  // NA
-  if (actionType === actionTypes.NA) {
-    const isOmitValidated =
-      note.annotations.filter(
-        (annotationItem) =>
-          annotationItem.propertyName === propertyName &&
-          annotationItem.value === notAvailable
-      ).length >=
-      omitValidThreshold - 1; // -1 to account for the current annotation
-
-    await addAnnotation({
-      userId,
-      noteId,
-      propertyName: propertyName,
-      value: notAvailable,
-      isValidated: isOmitValidated,
-    });
-
-    return json(
-      { errors: { name: "", request: "", code: "" } },
-      { status: 200 }
-    );
-  }
-
-  // add name
-  if (!nameString) {
-    return json(
-      {
-        errors: {
-          name: !nameString ? "Name is required" : "",
-          request: "",
-          code: `name-03`,
-        },
-      },
       { status: 400 }
     );
   }
@@ -148,23 +103,27 @@ export default function Age() {
             <input name="noteId" type="hidden" required value={noteId} />
             <button
               type="submit"
-              name="actionType"
-              value={actionTypes.annotate}
               className="ml-2 rounded  bg-blue-500 py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400"
             >
               Guardar
             </button>
           </div>
         </Form>
-        <Form replace reloadDocument method="post">
-          <input name="noteId" type="hidden" required value={note.id} />
+        <Form replace reloadDocument method="post" action="/annotate/omit">
+          <input
+            value={note.id}
+            name={omitFieldNames.noteId}
+            type="hidden"
+            required
+          />
+          <input
+            value={propertyName}
+            name={omitFieldNames.propertyName}
+            type="hidden"
+            required
+          />
 
-          <button
-            type="submit"
-            name="actionType"
-            value={actionTypes.NA}
-            className="py-1 px-4"
-          >
+          <button type="submit" className="py-2 px-4">
             No dice
           </button>
         </Form>

@@ -8,15 +8,10 @@ import { addAnnotation } from "~/models/annotations.server";
 import { getNote, getRandomNote } from "~/models/notes2.server";
 import { validateNumber } from "~/utils";
 import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
-import {
-  FIELD_NAMES,
-  validThreshold,
-  omitValidThreshold,
-  notAvailable,
-} from "~/utils/constants";
+import { FIELD_NAMES, validThreshold } from "~/utils/constants";
+import { omitFieldNames } from "./omit";
 
 const propertyName = FIELD_NAMES.victimAge;
-const actionTypes = { annotate: "annotate", NA: "notAvailable" };
 const validOptions = [
   { value: "child", display: "Niño" },
   { value: "young", display: "Joven" },
@@ -30,16 +25,14 @@ export async function action({ request }: ActionArgs) {
 
   const ageString = formData.get(propertyName)?.toString();
   const noteId = formData.get("noteId")?.toString();
-  const actionType = formData.get("actionType")?.toString() ?? "";
 
-  // valid actions
-  const actionTypesOptions = Object.values(actionTypes);
-  if (!actionTypesOptions.includes(actionType) || !noteId) {
+  // required input
+  if (!noteId || !ageString) {
     return json(
       {
         errors: {
-          age: "",
-          request: "Invalid request",
+          age: !ageString ? "Age is required" : "",
+          request: !noteId ? "Invalid request" : "",
           code: `age-01`,
         },
       },
@@ -56,43 +49,6 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  // NA
-  if (actionType === actionTypes.NA) {
-    const isOmitValidated =
-      note.annotations.filter(
-        (annotationItem) =>
-          annotationItem.propertyName === propertyName &&
-          annotationItem.value === notAvailable
-      ).length >=
-      omitValidThreshold - 1; // -1 to account for the current annotation
-
-    await addAnnotation({
-      userId,
-      noteId,
-      propertyName: propertyName,
-      value: notAvailable,
-      isValidated: isOmitValidated,
-    });
-
-    return json(
-      { errors: { age: "", request: "", code: `age-03` } },
-      { status: 200 }
-    );
-  }
-
-  if (!ageString) {
-    return json(
-      {
-        errors: {
-          age: "Age value is required",
-          request: "",
-          code: `age-04`,
-        },
-      },
-      { status: 400 }
-    );
-  }
-
   // check valid inputs
   if (
     !validOptions.map((validItem) => validItem.value).includes(ageString) &&
@@ -100,7 +56,7 @@ export async function action({ request }: ActionArgs) {
   ) {
     return json(
       {
-        errors: { age: "Age value is invalid", request: "", code: `age-05` },
+        errors: { age: "Age value is invalid", request: "", code: `age-03` },
       },
       { status: 400 }
     );
@@ -128,7 +84,6 @@ export async function action({ request }: ActionArgs) {
 export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request);
   const randomNote = await getRandomNote(propertyName, userId);
-
 
   return json({ note: randomNote });
 }
@@ -184,8 +139,6 @@ export default function Age() {
             <input name="noteId" type="hidden" required value={note.id} />
             <button
               type="submit"
-              name="actionType"
-              value={actionTypes.annotate}
               disabled={!age.trim()}
               className="rounded bg-blue-500  py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400"
             >
@@ -193,15 +146,21 @@ export default function Age() {
             </button>
           </Form>
         </div>
-        <Form replace reloadDocument method="post">
-          <input name="noteId" type="hidden" required value={note.id} />
+        <Form replace reloadDocument method="post" action="/annotate/omit">
+          <input
+            value={note.id}
+            name={omitFieldNames.noteId}
+            type="hidden"
+            required
+          />
+          <input
+            value={propertyName}
+            name={omitFieldNames.propertyName}
+            type="hidden"
+            required
+          />
 
-          <button
-            type="submit"
-            name="actionType"
-            value={actionTypes.NA}
-            className="py-2 px-4"
-          >
+          <button type="submit" className="py-2 px-4">
             No dice
           </button>
         </Form>
