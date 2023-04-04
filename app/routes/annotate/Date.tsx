@@ -10,7 +10,7 @@ import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
 import { FIELD_NAMES, validThreshold } from "~/utils/constants";
 import { omitFieldNames } from "./omit";
 
-const propertyName = FIELD_NAMES.noteDate;
+const propertyName = FIELD_NAMES.accidentDate;
 const inputNames = {
   day: "day",
   month: "month",
@@ -185,7 +185,7 @@ export default function Age() {
     );
 
   return (
-    <Annotate title="Edad de la víctima" noteUrls={noteUrls}>
+    <Annotate title="Fecha del accidente" noteUrls={noteUrls}>
       <div className="flex flex-wrap items-baseline justify-between gap-1">
         <div className="mr-2 flex  flex-wrap items-baseline gap-1">
           <div className="mr-3">
@@ -249,7 +249,7 @@ export default function Age() {
               <button
                 type="submit"
                 disabled={!day || !month || !year}
-                className="rounded bg-blue-500  py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400"
+                className="ml-2 rounded disabled:opacity-25 bg-blue-500 py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400"
               >
                 Guardar
               </button>
@@ -270,7 +270,10 @@ export default function Age() {
             required
           />
 
-          <button type="submit" className="py-2 px-4">
+          <button
+            type="submit"
+            className="ml-2 rounded border  border-blue-500 py-1 px-3 hover:bg-blue-600 hover:text-white focus:bg-blue-400"
+          >
             No dice
           </button>
         </Form>

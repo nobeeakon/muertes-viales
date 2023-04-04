@@ -6,34 +6,39 @@ import { requireUserId } from "~/session.server";
 
 import { addAnnotation } from "~/models/annotations.server";
 import { getNote, getRandomNote } from "~/models/notes2.server";
-import { validateNumericString } from "~/utils";
 import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
 import { FIELD_NAMES, validThreshold } from "~/utils/constants";
 import { omitFieldNames } from "./omit";
 
-const propertyName = FIELD_NAMES.victimAge;
+const propertyName = FIELD_NAMES.victimSex;
 const validOptions = [
-  { value: "child", display: "Niño" },
-  { value: "young", display: "Joven" },
-  { value: "adult", display: "Adulto" },
-  { value: "old", display: "3a edad" },
+  { value: "peaton", display: "Peatón" },
+  { value: "ciclista", display: "Ciclista" },
+  { value: "motociclista", display: "Motociclista" },
 ];
+
+const inputNames = {
+  transportation: "transportation",
+  noteId: "noteId",
+};
 
 export async function action({ request }: ActionArgs) {
   const userId = await requireUserId(request);
   const formData = await request.formData();
 
-  const ageString = formData.get(propertyName)?.toString();
-  const noteId = formData.get("noteId")?.toString();
+  const noteId = formData.get(inputNames.noteId)?.toString();
+  const transportation = formData.get(inputNames.transportation)?.toString();
 
   // required input
-  if (!noteId || !ageString) {
+  if (!noteId || !transportation) {
     return json(
       {
         errors: {
-          age: !ageString ? "Age is required" : "",
+          transportation: !transportation
+            ? "Transportation mean is required"
+            : "",
           request: !noteId ? "Invalid request" : "",
-          code: `age-01`,
+          code: `transportation-01`,
         },
       },
       { status: 400 }
@@ -44,19 +49,28 @@ export async function action({ request }: ActionArgs) {
   const note = await getNote({ id: noteId });
   if (!note) {
     return json(
-      { errors: { age: "", request: "Invalid request", code: `age-02` } },
+      {
+        errors: {
+          transportation: "",
+          request: "Invalid request",
+          code: `transportation-02`,
+        },
+      },
       { status: 400 }
     );
   }
 
   // check valid inputs
   if (
-    !validOptions.map((validItem) => validItem.value).includes(ageString) &&
-    !validateNumericString(ageString, 0)
+    !validOptions.map((validItem) => validItem.value).includes(transportation)
   ) {
     return json(
       {
-        errors: { age: "Age value is invalid", request: "", code: `age-03` },
+        errors: {
+          transportation: "Transportation value is invalid",
+          request: "",
+          code: `transportation-03`,
+        },
       },
       { status: 400 }
     );
@@ -66,7 +80,7 @@ export async function action({ request }: ActionArgs) {
     note.annotations.filter(
       (annotationItem) =>
         annotationItem.propertyName === propertyName &&
-        annotationItem.value === ageString
+        annotationItem.value === transportation
     ).length >=
     validThreshold - 1; // -1 to account for the current annotation
 
@@ -74,11 +88,14 @@ export async function action({ request }: ActionArgs) {
     userId,
     noteId,
     propertyName: propertyName,
-    value: ageString,
+    value: transportation,
     isValidated,
   });
 
-  return json({ errors: { age: "", request: "", code: "" } }, { status: 200 });
+  return json(
+    { errors: { transportation: "", request: "", code: "" } },
+    { status: 200 }
+  );
 }
 
 export async function loader({ request }: LoaderArgs) {
@@ -89,7 +106,6 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export default function Age() {
-  const [age, setAge] = useState("");
   const { note } = useLoaderData<typeof loader>();
 
   const noteId = note?.id;
@@ -103,43 +119,38 @@ export default function Age() {
     );
 
   return (
-    <Annotate title="Edad de la víctima" noteUrls={noteUrls}>
+    <Annotate title="Modo de transporte de la víctima" noteUrls={noteUrls}>
       <div className="flex flex-wrap items-baseline justify-between gap-1">
         <div className="mr-2 flex  flex-wrap items-baseline gap-1">
-          <div className="mr-3">
-            <label>
-              Años
-              <input
-                className="ml-2 rounded border border-gray-500 px-1 py-1"
-                type="number"
-                value={age}
-                autoFocus
-                onChange={(event) => setAge(event.target.value)}
-              />
-            </label>
-          </div>
-          <div className="mr-2 flex" role="group" aria-labelledby="age-options">
-            <div className="mr-2" id="age-options">
-              Opciones:
-            </div>
-            {validOptions.map((optionItem) => (
-              <label key={optionItem.value} className="mr-1">
-                <input
-                  type="radio"
-                  checked={age === optionItem.value}
-                  onChange={() => setAge(optionItem.value)}
-                />
+          <Form
+            replace
+            reloadDocument
+            method="post"
+            className="flex items-baseline"
+          >
+            <fieldset>
+              <legend className="float-left mr-2">Notas:</legend>
+              {validOptions.map((inputItem) => (
+                <label key={inputItem.value} className="mr-2">
+                  <input
+                    name={propertyName}
+                    type="radio"
+                    value={inputItem.value}
+                    required
+                  />
+                  {inputItem.display}
+                </label>
+              ))}
+            </fieldset>
 
-                {optionItem.display}
-              </label>
-            ))}
-          </div>
-          <Form replace reloadDocument method="post">
-            <input name={propertyName} type="hidden" required value={age} />
-            <input name="noteId" type="hidden" required value={note.id} />
+            <input
+              name={inputNames.noteId}
+              type="hidden"
+              required
+              value={note.id}
+            />
             <button
               type="submit"
-              disabled={!age.trim()}
               className="ml-2 rounded disabled:opacity-25 bg-blue-500 py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400"
               >
               Guardar

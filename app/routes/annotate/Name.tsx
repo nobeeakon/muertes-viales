@@ -103,8 +103,8 @@ export default function Age() {
             <input name="noteId" type="hidden" required value={noteId} />
             <button
               type="submit"
-              className="ml-2 rounded  bg-blue-500 py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400"
-            >
+              className="ml-2 rounded disabled:opacity-25 bg-blue-500 py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400"
+              >
               Guardar
             </button>
           </div>
@@ -123,7 +123,10 @@ export default function Age() {
             required
           />
 
-          <button type="submit" className="py-2 px-4">
+          <button
+            type="submit"
+            className="ml-2 rounded border  border-blue-500 py-1 px-3 hover:bg-blue-600 hover:text-white focus:bg-blue-400"
+          >
             No dice
           </button>
         </Form>

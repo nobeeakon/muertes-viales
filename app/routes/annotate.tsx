@@ -17,7 +17,10 @@ export default function NotesPage() {
 
   const links: Array<{ href: string; displayName: string }> = [
     { href: "date", displayName: "Fecha" },
+    { href: "time", displayName: "Hora" },
     { href: "age", displayName: "Edad" },
+    { href: "sex", displayName: "Sexo" },
+    { href: "transport", displayName: "Transporte" },
     { href: "name", displayName: "Nombre" },
     { href: "coordinates", displayName: "Ubicación" },
     { href: "addNote", displayName: "+ Agregar" },

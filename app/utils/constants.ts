@@ -2,7 +2,9 @@ export const FIELD_NAMES = {
   victimAge: "victimAge",
   victimName: "victimName",
   victimSex: "victimSex",
-  noteDate: "noteDate",
+  victimTransportation: "victimTransportation",
+  accidentDate: "accidentDate",
+  accidentTime: "accidentTime",
   coordinates: "coordinates",
 } as const;
 
