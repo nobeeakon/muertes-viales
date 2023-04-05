@@ -7,16 +7,15 @@ import { addAnnotation } from "~/models/annotations.server";
 import { getNote, getRandomNote } from "~/models/notes2.server";
 import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
 import { FIELD_NAMES, validThreshold } from "~/utils/constants";
-import { omitFieldNames } from "./omit";
 
-const propertyName = FIELD_NAMES.victimSex;
+const propertyName = FIELD_NAMES.hasVictimizerInfo;
 const validOptions = [
-  { value: "hombre", display: "Hombre" },
-  { value: "mujer", display: "Mujer" },
+  { value: true, display: "Verdadero" },
+  { value: false, display: "Falso" },
 ];
 
 const inputNames = {
-  sex: "sex",
+  hasVictimizerInfo: "hasVictimizerInfo",
   noteId: "noteId",
 };
 
@@ -25,16 +24,20 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
 
   const noteId = formData.get(inputNames.noteId)?.toString();
-  const sexString = formData.get(inputNames.sex)?.toString();
+  const hasVictimizerString = formData
+    .get(inputNames.hasVictimizerInfo)
+    ?.toString();
 
   // required input
-  if (!noteId || !sexString) {
+  if (!noteId || !hasVictimizerString) {
     return json(
       {
         errors: {
-          sex: !sexString ? "Sex is required" : "",
+          hasVictimizerInfo: !hasVictimizerString
+            ? "Victimizer info is required"
+            : "",
           request: !noteId ? "Invalid request" : "",
-          code: `sex-01`,
+          code: `hasVictimizerInfo-01`,
         },
       },
       { status: 400 }
@@ -45,16 +48,30 @@ export async function action({ request }: ActionArgs) {
   const note = await getNote({ id: noteId });
   if (!note) {
     return json(
-      { errors: { sex: "", request: "Invalid request", code: `sex-02` } },
+      {
+        errors: {
+          hasVictimizerInfo: "",
+          request: "Invalid request",
+          code: `hasVictimizerInfo-02`,
+        },
+      },
       { status: 400 }
     );
   }
 
   // check valid inputs
-  if (!validOptions.map((validItem) => validItem.value).includes(sexString)) {
+  if (
+    !validOptions
+      .map((validItem) => validItem.value.toString())
+      .includes(hasVictimizerString)
+  ) {
     return json(
       {
-        errors: { sex: "Sex value is invalid", request: "", code: `sex-03` },
+        errors: {
+          hasVictimizerInfo: "Victimizer info is invalid",
+          request: "",
+          code: `hasVictimizerInfo-03`,
+        },
       },
       { status: 400 }
     );
@@ -64,7 +81,7 @@ export async function action({ request }: ActionArgs) {
     note.annotations.filter(
       (annotationItem) =>
         annotationItem.propertyName === propertyName &&
-        annotationItem.value === sexString
+        annotationItem.value === hasVictimizerString
     ).length >=
     validThreshold - 1; // -1 to account for the current annotation
 
@@ -72,11 +89,14 @@ export async function action({ request }: ActionArgs) {
     userId,
     noteId,
     propertyName: propertyName,
-    value: sexString,
+    value: hasVictimizerString,
     isValidated,
   });
 
-  return json({ errors: { sex: "", request: "", code: "" } }, { status: 200 });
+  return json(
+    { errors: { hasVictimizerInfo: "", request: "", code: "" } },
+    { status: 200 }
+  );
 }
 
 export async function loader({ request }: LoaderArgs) {
@@ -100,7 +120,7 @@ export default function Age() {
     );
 
   return (
-    <Annotate title="Sexo de la víctima" noteUrls={noteUrls}>
+    <Annotate title="Información del victimario" noteUrls={noteUrls}>
       <div className="flex flex-wrap items-baseline justify-between gap-1">
         <div className="mr-2 flex  flex-wrap items-baseline gap-1">
           <Form
@@ -110,13 +130,15 @@ export default function Age() {
             className="flex items-baseline"
           >
             <fieldset>
-              <legend className="float-left mr-2">Sexo:</legend>
+              <legend className="float-left mr-2">
+                Tiene información del responsable (edad, sexo):
+              </legend>
               {validOptions.map((inputItem) => (
-                <label key={inputItem.value} className="mr-2">
+                <label key={inputItem.value.toString()} className="mr-2">
                   <input
                     name={propertyName}
                     type="radio"
-                    value={inputItem.value}
+                    value={inputItem.value.toString()}
                     required
                   />
                   {inputItem.display}
@@ -138,27 +160,6 @@ export default function Age() {
             </button>
           </Form>
         </div>
-        <Form replace reloadDocument method="post" action="/annotate/omit">
-          <input
-            value={note.id}
-            name={omitFieldNames.noteId}
-            type="hidden"
-            required
-          />
-          <input
-            value={propertyName}
-            name={omitFieldNames.propertyName}
-            type="hidden"
-            required
-          />
-
-          <button
-            type="submit"
-            className="ml-2 rounded border  border-blue-500 py-1 px-3 hover:bg-blue-600 hover:text-white focus:bg-blue-400"
-          >
-            No dice
-          </button>
-        </Form>
       </div>
     </Annotate>
   );

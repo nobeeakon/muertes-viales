@@ -170,7 +170,7 @@ export default function Age() {
               <button
                 type="submit"
                 disabled={!coordinates?.latitude || !coordinates?.longitude}
-                className="ml-2 rounded disabled:opacity-25 bg-blue-500 py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400"
+                className="ml-2 rounded bg-blue-500 py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400 disabled:opacity-25"
               >
                 Guardar
               </button>

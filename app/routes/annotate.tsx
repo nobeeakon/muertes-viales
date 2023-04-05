@@ -23,6 +23,7 @@ export default function NotesPage() {
     { href: "transport", displayName: "Transporte" },
     { href: "name", displayName: "Nombre" },
     { href: "coordinates", displayName: "Ubicación" },
+    { href: "victimizer", displayName: "Victimario" },
     { href: "addNote", displayName: "+ Agregar" },
   ];
 

@@ -6,6 +6,7 @@ export const FIELD_NAMES = {
   accidentDate: "accidentDate",
   accidentTime: "accidentTime",
   coordinates: "coordinates",
+  hasVictimizerInfo: "hasVictimizerInfo",
 } as const;
 
 export type FieldsType = keyof typeof FIELD_NAMES;

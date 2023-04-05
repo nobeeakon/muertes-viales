@@ -46,6 +46,19 @@ export async function addAnnotation({
     }
   }
 
+  // prevent the user to add more than one annotation
+  // for a specific property
+  const previousAnnotation = await prisma.annotation.findFirst({
+    where: {
+      propertyName,
+      value,
+      note2Id: noteId,
+      userId,
+    },
+  });
+
+  if (previousAnnotation) return;
+
   return prisma.annotation.create({
     data: {
       propertyName: propertyName,
