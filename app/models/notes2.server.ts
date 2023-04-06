@@ -1,8 +1,8 @@
 import type { User, Note2, NoteUrl } from "@prisma/client";
 
 import { prisma } from "~/db.server";
-import { FIELD_NAMES } from "~/utils/constants";
-import type { FieldsType } from "~/utils/constants";
+import { FIELD_NAMES , omitValidThreshold} from "~/utils/constants";
+import type { FieldsType  } from "~/utils/constants";
 
 export type { Note2 } from "@prisma/client";
 
@@ -131,6 +131,9 @@ export async function getRandomNote(property: FieldsType, userId: string) {
       id: {
         notIn: [...validatedNoteIds, ...propertyUserAnnotatedNoteIds],
       },
+      isUnavailableCounter: {
+        lte: omitValidThreshold
+      }
     },
     orderBy: {
       createdAt: "asc",
@@ -178,6 +181,9 @@ export async function getRandomNoteHasVictimizerInfo(
         notIn: [...validatedNoteIds, ...propertyUserAnnotatedNoteIds],
         in: withVictimizerInfoNoteIds,
       },
+      isUnavailableCounter: {
+        lte: omitValidThreshold
+      }
     },
     orderBy: {
       createdAt: "asc",
