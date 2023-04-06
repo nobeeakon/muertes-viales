@@ -6,6 +6,7 @@ import { requireUserId } from "~/session.server";
 import {
   addAnnotation,
   increaseUnavailableCounterNote,
+  increaseInvalidCounterNote,
 } from "~/models/annotations.server";
 import { getNote } from "~/models/notes2.server";
 import {
@@ -17,6 +18,7 @@ import {
 export const actionType = {
   unavailableProperty: "unavailableProperty",
   unavailableNote: "unavailableNote",
+  invalidNote: "invalidNote",
 };
 
 export const omitFieldNames = {
@@ -82,10 +84,20 @@ export async function action({ request }: ActionArgs) {
 
   if (
     actionTypeString === actionType.unavailableNote &&
-    annotationResult !== "previously_annotated"
+    annotationResult === "annotated"
   ) {
     await increaseUnavailableCounterNote({
       noteId,
+    });
+  }
+
+  if (
+    actionTypeString === actionType.invalidNote &&
+    annotationResult === "annotated"
+  ) {
+    await increaseInvalidCounterNote({
+      noteId,
+      userId,
     });
   }
 

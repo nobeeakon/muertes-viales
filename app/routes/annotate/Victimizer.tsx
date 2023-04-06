@@ -165,7 +165,7 @@ export default function Age() {
           <OmitForms
             noteId={note.id}
             propertyName={propertyName}
-            showUnavailableInfo={false}
+            showUnavailableInfoButton={false}
           />
         </div>
       </div>

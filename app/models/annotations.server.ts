@@ -1,7 +1,7 @@
 import type { User, Note2, Annotation } from "@prisma/client";
-
 import { prisma } from "~/db.server";
 import type { FieldsType } from "~/utils/constants";
+import { omitValidThreshold } from "~/utils/constants";
 
 export type { Note2 } from "@prisma/client";
 
@@ -59,7 +59,7 @@ export async function addAnnotation({
 
   if (previousAnnotation) return "previously_annotated";
 
-  return prisma.annotation.create({
+  await prisma.annotation.create({
     data: {
       propertyName: propertyName,
       value,
@@ -75,6 +75,8 @@ export async function addAnnotation({
       },
     },
   });
+
+  return "annotated";
 }
 
 /**
@@ -106,4 +108,66 @@ export async function increaseUnavailableCounterNote({
       id: noteId,
     },
   });
+}
+
+/**
+ * Increase invalid (not relevant, or url not related with vial accidents) note counter
+ */
+export async function increaseInvalidCounterNote({
+  noteId,
+  userId,
+}: {
+  noteId: Note2["id"];
+  userId: Note2["userId"];
+}) {
+  // get previous counter
+  const noteInfoResult = await prisma.note2.findFirst({
+    where: {
+      id: noteId,
+    },
+    select: {
+      invalidCounter: true,
+    },
+  });
+
+  // note not found
+  if (noteInfoResult === null) return;
+
+  const newInvalidNoteInfoCounter = noteInfoResult.invalidCounter + 1;
+
+  // update note
+  await prisma.note2.update({
+    data: {
+      invalidCounter: newInvalidNoteInfoCounter,
+    },
+    where: {
+      id: noteId,
+    },
+  });
+
+  if (newInvalidNoteInfoCounter > omitValidThreshold) {
+    // increase invalid notes counter
+    const userInfoResult = await prisma.user.findFirst({
+      where: {
+        id: userId,
+      },
+      select: {
+        invalidNotesCounter: true,
+      },
+    });
+
+    // user not found
+    if (!userInfoResult) return;
+
+    await prisma.user.update({
+      data: {
+        invalidNotesCounter: userInfoResult.invalidNotesCounter + 1,
+      },
+      where: {
+        id: userId,
+      },
+    });
+  }
+
+  return;
 }
