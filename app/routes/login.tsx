@@ -6,15 +6,17 @@ import * as React from "react";
 import { createUserSession, getUserId } from "~/session.server";
 import { verifyLogin } from "~/models/user.server";
 import { safeRedirect, validateEmail } from "~/utils";
+import { getBlockedUserIds } from "~/models/user.server";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
-  if (userId) return redirect("/");
+  if (userId) return redirect("/annotate");
   return json({});
 }
 
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
+  const blockedUserIds = await getBlockedUserIds();
   const email = formData.get("email");
   const password = formData.get("password");
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/annotate");
@@ -47,6 +49,18 @@ export async function action({ request }: ActionArgs) {
     return json(
       { errors: { email: "Invalid email or password", password: null } },
       { status: 400 }
+    );
+  }
+
+  if (blockedUserIds.includes(user.id)) {
+    return json(
+      {
+        errors: {
+          email: "Your user has been blocked due to invalid contributions",
+          password: null,
+        },
+      },
+      { status: 403 }
     );
   }
 

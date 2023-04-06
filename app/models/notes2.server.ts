@@ -3,6 +3,7 @@ import type { User, Note2, NoteUrl } from "@prisma/client";
 import { prisma } from "~/db.server";
 import { FIELD_NAMES, omitValidThreshold } from "~/utils/constants";
 import type { FieldsType } from "~/utils/constants";
+import { getBlockedUserIds } from "./user.server";
 
 export type { Note2 } from "@prisma/client";
 
@@ -86,8 +87,8 @@ export function deleteNote({ id }: Pick<Note2, "id">) {
   });
 }
 
-const findValidatedNotes = (property: FieldsType, userId: string) =>
-  prisma.validatedAnnotation.findMany({
+function findValidatedNotes(property: FieldsType, userId: string) {
+  return prisma.validatedAnnotation.findMany({
     select: {
       note2Id: true,
     },
@@ -96,9 +97,10 @@ const findValidatedNotes = (property: FieldsType, userId: string) =>
     },
     distinct: ["note2Id"],
   });
+}
 
-const findUserAnnotatedNotes = (property: FieldsType, userId: string) =>
-  prisma.annotation.findMany({
+function findUserAnnotatedNotes(property: FieldsType, userId: string) {
+  return prisma.annotation.findMany({
     select: {
       note2Id: true,
     },
@@ -108,6 +110,7 @@ const findUserAnnotatedNotes = (property: FieldsType, userId: string) =>
     },
     distinct: ["note2Id"],
   });
+}
 
 /**
  * Get a random note not previously annotated by the current user,
@@ -116,6 +119,7 @@ const findUserAnnotatedNotes = (property: FieldsType, userId: string) =>
 export async function getRandomNote(property: FieldsType, userId: string) {
   const validatedNotes = await findValidatedNotes(property, userId);
   const propertyUserAnnotated = await findUserAnnotatedNotes(property, userId);
+  const blockedUserIds = await getBlockedUserIds();
 
   const validatedNoteIds = validatedNotes.map((item) => item.note2Id);
   const propertyUserAnnotatedNoteIds = propertyUserAnnotated.map(
@@ -130,6 +134,9 @@ export async function getRandomNote(property: FieldsType, userId: string) {
     where: {
       id: {
         notIn: [...validatedNoteIds, ...propertyUserAnnotatedNoteIds],
+      },
+      userId: {
+        notIn: blockedUserIds,
       },
       isUnavailableCounter: {
         lte: omitValidThreshold,
@@ -151,6 +158,7 @@ export async function getRandomNoteHasVictimizerInfo(
 ) {
   const validatedNotes = await findValidatedNotes(property, userId);
   const propertyUserAnnotated = await findUserAnnotatedNotes(property, userId);
+  const blockedUserIds = await getBlockedUserIds();
 
   const notesWithVictimizerInfo = await prisma.validatedAnnotation.findMany({
     select: {
@@ -180,6 +188,9 @@ export async function getRandomNoteHasVictimizerInfo(
       id: {
         notIn: [...validatedNoteIds, ...propertyUserAnnotatedNoteIds],
         in: withVictimizerInfoNoteIds,
+      },
+      userId: {
+        notIn: blockedUserIds,
       },
       isUnavailableCounter: {
         lte: omitValidThreshold,
