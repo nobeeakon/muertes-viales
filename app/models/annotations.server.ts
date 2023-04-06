@@ -57,7 +57,7 @@ export async function addAnnotation({
     },
   });
 
-  if (previousAnnotation) return;
+  if (previousAnnotation) return "previously_annotated";
 
   return prisma.annotation.create({
     data: {
@@ -73,6 +73,37 @@ export async function addAnnotation({
           id: noteId,
         },
       },
+    },
+  });
+}
+
+/**
+ * Increase unavailable note counter
+ */
+export async function increaseUnavailableCounterNote({
+  noteId,
+}: {
+  noteId: Note2["id"];
+}) {
+  // get previous counter
+  const noteInfoResult = await prisma.note2.findFirst({
+    where: {
+      id: noteId,
+    },
+    select: {
+      isUnavailableCounter: true,
+    },
+  });
+
+  // note not found
+  if (noteInfoResult === null) return;
+
+  return prisma.note2.update({
+    data: {
+      isUnavailableCounter: noteInfoResult.isUnavailableCounter + 1,
+    },
+    where: {
+      id: noteId,
     },
   });
 }

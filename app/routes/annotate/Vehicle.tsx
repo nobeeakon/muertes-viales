@@ -7,7 +7,7 @@ import { addAnnotation } from "~/models/annotations.server";
 import { getNote, getRandomNote } from "~/models/notes2.server";
 import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
 import { FIELD_NAMES, validThreshold } from "~/utils/constants";
-import { omitFieldNames } from "./omit";
+import OmitForms from "~/components/OmitForms";
 
 const propertyName = FIELD_NAMES.victimizerVehicle;
 const validOptions = [
@@ -167,32 +167,9 @@ export default function Age() {
             </button>
           </Form>
         </div>
-        <Form
-          replace
-          reloadDocument
-          method="post"
-          action="/annotate/addAnnotation"
-        >
-          <input
-            value={note.id}
-            name={omitFieldNames.noteId}
-            type="hidden"
-            required
-          />
-          <input
-            value={propertyName}
-            name={omitFieldNames.propertyName}
-            type="hidden"
-            required
-          />
-
-          <button
-            type="submit"
-            className="ml-2 rounded border  border-blue-500 py-1 px-3 hover:bg-blue-600 hover:text-white focus:bg-blue-400"
-          >
-            No dice
-          </button>
-        </Form>
+        <div className="flex">
+          <OmitForms noteId={note.id} propertyName={propertyName} />
+        </div>
       </div>
     </Annotate>
   );

@@ -10,6 +10,7 @@ export const FIELD_NAMES = {
   victimizerVehicle: "victimizerVehicle",
   victimizerSex: "victimizerSex",
   victimizerAge: "victimizerAge",
+  unavailableNote: "unavailableNote",
 } as const;
 
 export type FieldsType = keyof typeof FIELD_NAMES;
