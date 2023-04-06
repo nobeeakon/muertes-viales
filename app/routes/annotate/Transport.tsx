@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
@@ -10,7 +9,7 @@ import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
 import { FIELD_NAMES, validThreshold } from "~/utils/constants";
 import { omitFieldNames } from "./omit";
 
-const propertyName = FIELD_NAMES.victimSex;
+const propertyName = FIELD_NAMES.victimTransportation;
 const validOptions = [
   { value: "peaton", display: "Peatón" },
   { value: "ciclista", display: "Ciclista" },

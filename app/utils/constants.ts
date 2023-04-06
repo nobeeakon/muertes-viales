@@ -7,6 +7,9 @@ export const FIELD_NAMES = {
   accidentTime: "accidentTime",
   coordinates: "coordinates",
   hasVictimizerInfo: "hasVictimizerInfo",
+  victimizerVehicle: "victimizerVehicle",
+  victimizerSex: "victimizerSex",
+  victimizerAge: "victimizerAge",
 } as const;
 
 export type FieldsType = keyof typeof FIELD_NAMES;
@@ -22,3 +25,6 @@ export const validateFieldName = (
 export const validThreshold = 1;
 export const omitValidThreshold = 2;
 export const notAvailable = "NA";
+
+/** list of domains that block iframe, 'www.' is stripped */
+export const blockedHosts = ["lineadirectaportal.com"];

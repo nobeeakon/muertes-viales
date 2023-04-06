@@ -3,6 +3,8 @@ import type { ReactNode } from "react";
 import { Link } from "@remix-run/react";
 import type { NoteUrl } from "@prisma/client";
 
+import { blockedHosts } from "~/utils/constants";
+
 const NoMoreToAnnotate = () => (
   <div>
     <p>
@@ -32,6 +34,10 @@ const Annotate = ({ title, noteUrls, children }: Props) => {
     return host.replace("www.", "");
   };
 
+  const isCurrentUrlPossiblyBlocked = blockedHosts.includes(
+    getHostName(noteUrls[urlIndex].url)
+  );
+
   return (
     <div className="h-full">
       <div className="border-b-1 mb-2 border-solid">
@@ -54,16 +60,22 @@ const Annotate = ({ title, noteUrls, children }: Props) => {
               </label>
             ))}
           </fieldset>
-          <div>
+          <div className="flex gap-2">
             ¿No se ve la nota?:{" "}
             <a
               href={noteUrls[urlIndex].url}
               rel="noreferrer"
               target="_blank"
-              className="underline decoration-sky-500"
+              className="animate-[wiggle_1s_ease-in-out_infinite] underline decoration-sky-500"
             >
               Ve la nota en la página
             </a>
+            {isCurrentUrlPossiblyBlocked && (
+              <span className="relative flex h-3 w-3">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75"></span>
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-sky-500"></span>
+              </span>
+            )}
           </div>
         </div>
 

@@ -9,14 +9,30 @@ import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
 import { FIELD_NAMES, validThreshold } from "~/utils/constants";
 import { omitFieldNames } from "./omit";
 
-const propertyName = FIELD_NAMES.victimSex;
+const propertyName = FIELD_NAMES.victimizerVehicle;
 const validOptions = [
-  { value: "hombre", display: "Hombre" },
-  { value: "mujer", display: "Mujer" },
+  { value: "automovil", display: "Automovil" },
+  { value: "ambulancia", display: "Ambulancia" },
+  { value: "bus", display: "Autobus (pasajeros)" },
+  { value: "bicicleta", display: "Bicicleta" },
+  { value: "caballo", display: "Caballo" },
+  { value: "camion", display: "Camión (transporte mercancias)" },
+  { value: "camioneta", display: "Camioneta" },
+  { value: "carreta", display: "Carreta" },
+  { value: "cuatrimoto", display: "Cuatrimoto" },
+  { value: "grua", display: "Grúa" },
+  { value: "taxi", display: "Taxi" },
+  { value: "motocicleta", display: "Motocicleta" },
+  { value: "patrulla", display: "Patrulla" },
+  { value: "pipa", display: "Pipa" },
+  { value: "tractor", display: "Tractor" },
+  { value: "trailer", display: "Trailer" },
+  { value: "tren", display: "Tren" },
+  { value: "tren_ligero", display: "Tren ligero" },
 ];
 
 const inputNames = {
-  sex: "sex",
+  vehicle: "vehicle",
   noteId: "noteId",
 };
 
@@ -25,16 +41,16 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
 
   const noteId = formData.get(inputNames.noteId)?.toString();
-  const sexString = formData.get(inputNames.sex)?.toString();
+  const transportation = formData.get(inputNames.vehicle)?.toString();
 
   // required input
-  if (!noteId || !sexString) {
+  if (!noteId || !transportation) {
     return json(
       {
         errors: {
-          sex: !sexString ? "Sex is required" : "",
+          transportation: !transportation ? "Vehicle is required" : "",
           request: !noteId ? "Invalid request" : "",
-          code: `sex-01`,
+          code: `vehicle-01`,
         },
       },
       { status: 400 }
@@ -45,16 +61,28 @@ export async function action({ request }: ActionArgs) {
   const note = await getNote({ id: noteId });
   if (!note) {
     return json(
-      { errors: { sex: "", request: "Invalid request", code: `sex-02` } },
+      {
+        errors: {
+          transportation: "",
+          request: "Invalid request",
+          code: `vehicle-02`,
+        },
+      },
       { status: 400 }
     );
   }
 
   // check valid inputs
-  if (!validOptions.map((validItem) => validItem.value).includes(sexString)) {
+  if (
+    !validOptions.map((validItem) => validItem.value).includes(transportation)
+  ) {
     return json(
       {
-        errors: { sex: "Sex value is invalid", request: "", code: `sex-03` },
+        errors: {
+          transportation: "Vehicle value is invalid",
+          request: "",
+          code: `vehicle-03`,
+        },
       },
       { status: 400 }
     );
@@ -64,7 +92,7 @@ export async function action({ request }: ActionArgs) {
     note.annotations.filter(
       (annotationItem) =>
         annotationItem.propertyName === propertyName &&
-        annotationItem.value === sexString
+        annotationItem.value === transportation
     ).length >=
     validThreshold - 1; // -1 to account for the current annotation
 
@@ -72,11 +100,14 @@ export async function action({ request }: ActionArgs) {
     userId,
     noteId,
     propertyName: propertyName,
-    value: sexString,
+    value: transportation,
     isValidated,
   });
 
-  return json({ errors: { sex: "", request: "", code: "" } }, { status: 200 });
+  return json(
+    { errors: { transportation: "", request: "", code: "" } },
+    { status: 200 }
+  );
 }
 
 export async function loader({ request }: LoaderArgs) {
@@ -100,7 +131,7 @@ export default function Age() {
     );
 
   return (
-    <Annotate title="Sexo de la víctima" noteUrls={noteUrls}>
+    <Annotate title="Vehículo del victimario" noteUrls={noteUrls}>
       <div className="flex flex-wrap items-baseline justify-between gap-1">
         <div className="mr-2 flex  flex-wrap items-baseline gap-1">
           <Form
@@ -109,20 +140,18 @@ export default function Age() {
             method="post"
             className="flex items-baseline"
           >
-            <fieldset>
-              <legend className="float-left mr-2">Sexo:</legend>
-              {validOptions.map((inputItem) => (
-                <label key={inputItem.value} className="mr-2">
-                  <input
-                    name={inputNames.sex}
-                    type="radio"
-                    value={inputItem.value}
-                    required
-                  />
-                  {inputItem.display}
-                </label>
-              ))}
-            </fieldset>
+            <span className="mr-4">
+              <label htmlFor="time" className="mr-2">
+                Vehículo:
+              </label>
+              <select id="time" name={inputNames.vehicle} required>
+                {validOptions.map((vehicleItem) => (
+                  <option key={vehicleItem.value} value={vehicleItem.value}>
+                    {vehicleItem.display}
+                  </option>
+                ))}
+              </select>
+            </span>
 
             <input
               name={inputNames.noteId}
@@ -138,7 +167,12 @@ export default function Age() {
             </button>
           </Form>
         </div>
-        <Form replace reloadDocument method="post" action="/annotate/omit">
+        <Form
+          replace
+          reloadDocument
+          method="post"
+          action="/annotate/addAnnotation"
+        >
           <input
             value={note.id}
             name={omitFieldNames.noteId}

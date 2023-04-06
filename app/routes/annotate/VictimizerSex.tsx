@@ -4,12 +4,15 @@ import { Form, useLoaderData } from "@remix-run/react";
 import { requireUserId } from "~/session.server";
 
 import { addAnnotation } from "~/models/annotations.server";
-import { getNote, getRandomNote } from "~/models/notes2.server";
+import {
+  getNote,
+  getRandomNoteHasVictimizerInfo,
+} from "~/models/notes2.server";
 import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
 import { FIELD_NAMES, validThreshold } from "~/utils/constants";
 import { omitFieldNames } from "./omit";
 
-const propertyName = FIELD_NAMES.victimSex;
+const propertyName = FIELD_NAMES.victimizerSex;
 const validOptions = [
   { value: "hombre", display: "Hombre" },
   { value: "mujer", display: "Mujer" },
@@ -81,7 +84,7 @@ export async function action({ request }: ActionArgs) {
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request);
-  const randomNote = await getRandomNote(propertyName, userId);
+  const randomNote = await getRandomNoteHasVictimizerInfo(propertyName, userId);
 
   return json({ note: randomNote });
 }
@@ -100,7 +103,7 @@ export default function Age() {
     );
 
   return (
-    <Annotate title="Sexo de la víctima" noteUrls={noteUrls}>
+    <Annotate title="Sexo del victimario" noteUrls={noteUrls}>
       <div className="flex flex-wrap items-baseline justify-between gap-1">
         <div className="mr-2 flex  flex-wrap items-baseline gap-1">
           <Form
