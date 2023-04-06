@@ -7,61 +7,14 @@ import { requireUserId } from "~/session.server";
 import { addAnnotation } from "~/models/annotations.server";
 import { getNote, getRandomNote } from "~/models/notes2.server";
 import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
-import {
-  FIELD_NAMES,
-  validThreshold,
-  omitValidThreshold,
-  notAvailable,
-} from "~/utils/constants";
+import { FIELD_NAMES, validThreshold } from "~/utils/constants";
 import { getGoogleMapsCoordiantes, haversineDistance } from "~/utils/utils";
-import { validateNumber, validateUrl } from "~/utils";
+import { validateUrl } from "~/utils";
+import OmitForms from "~/components/OmitForms";
 
 const propertyName = FIELD_NAMES.coordinates;
-const actionTypes = { annotate: "annotate", NA: "notAvailable" };
 const inputNames = {
   googleMapsUrl: "googleMapsUrl",
-  latitude: "latitude",
-  longitude: "longitude",
-};
-
-type CoordinatesType = {
-  latitude: number;
-  longitude: number;
-};
-
-const dbCoords = {
-  /** Builds string to store in the data base  */
-  buildCoordsString: (googleMapsUrl: string, coordinates: CoordinatesType) => {
-    return JSON.stringify({ googleMapsUrl, ...coordinates });
-  },
-  /** Parses string  stored in the data base  */
-  parseCoords: (coordinates: string) => {
-    try {
-      const jsonObj = JSON.parse(coordinates) as unknown;
-
-      if (typeof jsonObj === "object") {
-        if (
-          jsonObj !== null &&
-          "googleMapsUrl" in jsonObj &&
-          "latitude" in jsonObj &&
-          "longitude" in jsonObj &&
-          typeof jsonObj["googleMapsUrl"] === "string" &&
-          typeof jsonObj["latitude"] === "number" &&
-          typeof jsonObj["longitude"] === "number"
-        ) {
-          return {
-            googleMapsUrl: jsonObj.googleMapsUrl,
-            latitude: jsonObj.latitude,
-            longitude: jsonObj.longitude,
-          };
-        }
-      }
-    } catch (error) {
-      return null;
-    }
-
-    return null;
-  },
 };
 
 export async function action({ request }: ActionArgs) {
@@ -71,19 +24,18 @@ export async function action({ request }: ActionArgs) {
   const googleMapsUrlString = formData
     .get(inputNames.googleMapsUrl)
     ?.toString();
-  const latitudeString = formData.get(inputNames.latitude)?.toString();
-  const longitudeString = formData.get(inputNames.longitude)?.toString();
   const noteId = formData.get("noteId")?.toString();
-  const actionType = formData.get("actionType")?.toString() ?? "";
 
-  // valid actions
-  const actionTypesOptions = Object.values(actionTypes);
-  if (!actionTypesOptions.includes(actionType) || !noteId) {
+  // required input
+
+  if (!noteId || !googleMapsUrlString) {
     return json(
       {
         errors: {
-          coordinates: "",
-          request: "Invalid request",
+          coordinates: !googleMapsUrlString
+            ? "Coordinates information is required"
+            : "",
+          request: !noteId ? "Invalid request" : "",
           code: `coordinates-01`,
         },
       },
@@ -106,68 +58,21 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  // NA
-  if (actionType === actionTypes.NA) {
-    const isOmitValidated =
-      note.annotations.filter(
-        (annotationItem) =>
-          annotationItem.propertyName === propertyName &&
-          annotationItem.value === notAvailable
-      ).length >=
-      omitValidThreshold - 1; // -1 to account for the current annotation
-
-    await addAnnotation({
-      userId,
-      noteId,
-      propertyName: propertyName,
-      value: notAvailable,
-      isValidated: isOmitValidated,
-    });
-
-    return json(
-      { errors: { coordinates: "", request: "", code: `coordinates-03` } },
-      { status: 200 }
-    );
-  }
-
-  if (!latitudeString || !longitudeString || !googleMapsUrlString) {
-    return json(
-      {
-        errors: {
-          coordinates: "Coordinates value is required",
-          request: "",
-          code: `coordinates-04`,
-        },
-      },
-      { status: 400 }
-    );
-  }
-
   // check valid inputs
-  if (
-    !validateNumber(latitudeString) ||
-    !validateNumber(longitudeString) ||
-    !validateUrl(googleMapsUrlString)
-  ) {
+  const coordinates = getGoogleMapsCoordiantes(googleMapsUrlString ?? "");
+
+  if (!validateUrl(googleMapsUrlString) || !coordinates) {
     return json(
       {
         errors: {
           coordinates: "Coordinates value is invalid",
           request: "",
-          code: `coordinates-05`,
+          code: `coordinates-03`,
         },
       },
       { status: 400 }
     );
   }
-
-  const latitudeNumber = parseFloat(latitudeString);
-  const longitudeNumber = parseFloat(longitudeString);
-
-  const coordinatesObj = {
-    latitude: latitudeNumber,
-    longitude: longitudeNumber,
-  };
 
   const DISTANCE_THRESHOLD = 500; // 500 meters
 
@@ -178,32 +83,25 @@ export async function action({ request }: ActionArgs) {
           return null;
         }
 
-        return dbCoords.parseCoords(annotationItem.value);
+        return getGoogleMapsCoordiantes(googleMapsUrlString);
       })
       .filter((coordinatesItem) => {
         if (!coordinatesItem) return false;
 
-        const { latitude: itemLatitude, longitude: itemLongitude } =
-          coordinatesItem;
         return (
-          haversineDistance(coordinatesObj, {
-            latitude: itemLatitude,
-            longitude: itemLongitude,
+          haversineDistance(coordinates, {
+            latitude: coordinatesItem.latitude,
+            longitude: coordinatesItem.longitude,
           }) <= DISTANCE_THRESHOLD
         );
       }).length >=
     validThreshold - 1; // -1 to account for the current annotation
 
-  const coordinatesString = dbCoords.buildCoordsString(googleMapsUrlString, {
-    latitude: latitudeNumber,
-    longitude: longitudeNumber,
-  });
-
   await addAnnotation({
     userId,
     noteId,
     propertyName: propertyName,
-    value: coordinatesString,
+    value: googleMapsUrlString,
     isValidated: isValidated,
   });
 
@@ -221,19 +119,18 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export default function Age() {
-  const [coordinates, setCoordinates] = useState({ latitude: 0, longitude: 0 }); // latitude: N-S, longitude: E-W
+  const [coordinates, setCoordinates] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null); // latitude: N-S, longitude: E-W
   const { note } = useLoaderData<typeof loader>();
 
   const onGoogleMapsUrlChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const coordinates = getGoogleMapsCoordiantes(event.target.value);
+    const newCoordinates = getGoogleMapsCoordiantes(event.target.value);
 
-    if (!coordinates) {
-      setCoordinates({ latitude: 0, longitude: 0 });
-    } else {
-      setCoordinates(coordinates);
-    }
+    setCoordinates(newCoordinates);
   };
 
   const noteId = note?.id;
@@ -247,7 +144,7 @@ export default function Age() {
     );
 
   return (
-    <Annotate title="Edad de la víctima" noteUrls={noteUrls}>
+    <Annotate title="Ubicación del accidente" noteUrls={noteUrls}>
       <div className="flex flex-wrap items-baseline justify-between gap-1">
         <div className="mr-2 flex  flex-wrap items-baseline gap-1">
           <div className="mr-3 flex flex-wrap items-baseline gap-2">
@@ -272,59 +169,35 @@ export default function Age() {
 
               <button
                 type="submit"
-                name="actionType"
-                value={actionTypes.annotate}
-                disabled={!coordinates.latitude || !coordinates.longitude}
-                className="ml-2 rounded  bg-blue-500 py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400"
+                disabled={!coordinates?.latitude || !coordinates?.longitude}
+                className="ml-2 rounded bg-blue-500 py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400 disabled:opacity-25"
               >
                 Guardar
               </button>
-              {!!coordinates.latitude && !!coordinates.longitude && (
+              {!!coordinates?.latitude && !!coordinates?.longitude && (
                 <a
                   href={`https://www.google.com/maps/?q=${coordinates.latitude},${coordinates.longitude}`}
                   target="_blank"
                   rel="noreferrer"
+                  className="underline decoration-sky-500"
                 >
                   Maps
                 </a>
               )}
-              {coordinates.latitude !== 0 && (
+              {!!coordinates?.latitude && (
                 <span>Latitude:&nbsp;{coordinates.latitude}</span>
               )}
-              {coordinates.longitude !== 0 && (
+              {!!coordinates?.longitude && (
                 <span>Longitud:&nbsp;{coordinates.longitude}</span>
               )}
 
-              <input
-                value={coordinates.latitude}
-                type="number"
-                name={inputNames.latitude}
-                required
-                hidden
-              />
-              <input
-                value={coordinates.longitude}
-                type="number"
-                name={inputNames.longitude}
-                hidden
-                required
-              />
               <input name="noteId" type="hidden" required value={note.id} />
             </Form>
           </div>
         </div>
-        <Form replace reloadDocument method="post">
-          <input name="noteId" type="hidden" required value={note.id} />
-
-          <button
-            type="submit"
-            name="actionType"
-            value={actionTypes.NA}
-            className="py-2 px-4"
-          >
-            No dice
-          </button>
-        </Form>
+        <div className="flex">
+          <OmitForms noteId={note.id} propertyName={propertyName} />
+        </div>
       </div>
     </Annotate>
   );

@@ -16,6 +16,8 @@ model User {
 
   password Password?
   
+  invalidNotesCounter Int @default(0)
+
   notes    Note[]
   noteUrls Note2[]
 
@@ -34,6 +36,7 @@ model Note {
   title String
   body  String
 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -45,6 +48,11 @@ model Note2 {
   id String @id @default(cuid())
 
   createdAt DateTime @default(now())
+
+
+  comments String @default("")
+  isUnavailableCounter Int @default(0)
+  invalidCounter Int @default(0)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   userId String

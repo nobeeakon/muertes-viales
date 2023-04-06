@@ -75,7 +75,7 @@ export function validateEmail(email: unknown): email is string {
   return typeof email === "string" && htmlEmailRegexp.test(email);
 }
 
-export function validateUrl(url: unknown): url is string {
+export function validateUrl(url: unknown) {
   if (typeof url !== "string" || url.length === 0) return false;
 
   try {
@@ -86,7 +86,7 @@ export function validateUrl(url: unknown): url is string {
   }
 }
 
-export function validateNumber(number: string, min?: number): number is string {
+export function validateNumericString(number: string, min?: number) {
   const parsedNumber = parseFloat(number);
 
   if (isNaN(parsedNumber)) return false;

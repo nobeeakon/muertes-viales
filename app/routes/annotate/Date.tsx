@@ -7,15 +7,10 @@ import { requireUserId } from "~/session.server";
 import { addAnnotation } from "~/models/annotations.server";
 import { getNote, getRandomNote } from "~/models/notes2.server";
 import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
-import {
-  FIELD_NAMES,
-  validThreshold,
-  omitValidThreshold,
-  notAvailable,
-} from "~/utils/constants";
+import { FIELD_NAMES, validThreshold } from "~/utils/constants";
+import OmitForms from "~/components/OmitForms";
 
-const propertyName = FIELD_NAMES.noteDate;
-const actionTypes = { annotate: "annotate", NA: "notAvailable" };
+const propertyName = FIELD_NAMES.accidentDate;
 const inputNames = {
   day: "day",
   month: "month",
@@ -90,16 +85,15 @@ export async function action({ request }: ActionArgs) {
   const monthString = formData.get(inputNames.month)?.toString();
   const yearString = formData.get(inputNames.year)?.toString();
   const noteId = formData.get("noteId")?.toString();
-  const actionType = formData.get("actionType")?.toString() ?? "";
 
-  // valid actions
-  const actionTypesOptions = Object.values(actionTypes);
-  if (!actionTypesOptions.includes(actionType) || !noteId) {
+  // required input
+  const hasIncompleteInfo = !dayString || !monthString || !yearString;
+  if (!noteId || hasIncompleteInfo) {
     return json(
       {
         errors: {
-          date: "",
-          request: "Invalid request",
+          date: hasIncompleteInfo ? "Date information is required" : "",
+          request: !noteId ? "Invalid request" : "",
           code: `date-01`,
         },
       },
@@ -112,43 +106,6 @@ export async function action({ request }: ActionArgs) {
   if (!note) {
     return json(
       { errors: { date: "", request: "Invalid request", code: `date-02` } },
-      { status: 400 }
-    );
-  }
-
-  // NA
-  if (actionType === actionTypes.NA) {
-    const isOmitValidated =
-      note.annotations.filter(
-        (annotationItem) =>
-          annotationItem.propertyName === propertyName &&
-          annotationItem.value === notAvailable
-      ).length >=
-      omitValidThreshold - 1; // -1 to account for the current annotation
-
-    await addAnnotation({
-      userId,
-      noteId,
-      propertyName: propertyName,
-      value: notAvailable,
-      isValidated: isOmitValidated,
-    });
-
-    return json(
-      { errors: { date: "", request: "", code: `date-03` } },
-      { status: 200 }
-    );
-  }
-
-  if (!dayString || !monthString || !yearString) {
-    return json(
-      {
-        errors: {
-          date: "Date value is required",
-          request: "",
-          code: `date-04`,
-        },
-      },
       { status: 400 }
     );
   }
@@ -167,7 +124,7 @@ export async function action({ request }: ActionArgs) {
         errors: {
           date: "Date value is invalid ",
           request: "",
-          code: `date-05`,
+          code: `date-03`,
         },
       },
       { status: 400 }
@@ -228,7 +185,7 @@ export default function Age() {
     );
 
   return (
-    <Annotate title="Edad de la víctima" noteUrls={noteUrls}>
+    <Annotate title="Fecha del accidente" noteUrls={noteUrls}>
       <div className="flex flex-wrap items-baseline justify-between gap-1">
         <div className="mr-2 flex  flex-wrap items-baseline gap-1">
           <div className="mr-3">
@@ -291,28 +248,17 @@ export default function Age() {
               <input name="noteId" type="hidden" required value={note.id} />
               <button
                 type="submit"
-                name="actionType"
-                value={actionTypes.annotate}
                 disabled={!day || !month || !year}
-                className="rounded bg-blue-500  py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400"
+                className="ml-2 rounded bg-blue-500 py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400 disabled:opacity-25"
               >
                 Guardar
               </button>
             </Form>
           </div>
         </div>
-        <Form replace reloadDocument method="post">
-          <input name="noteId" type="hidden" required value={note.id} />
-
-          <button
-            type="submit"
-            name="actionType"
-            value={actionTypes.NA}
-            className="py-2 px-4"
-          >
-            No dice
-          </button>
-        </Form>
+        <div className="flex">
+          <OmitForms noteId={note.id} propertyName={propertyName} />
+        </div>
       </div>
     </Annotate>
   );

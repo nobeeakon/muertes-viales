@@ -1,32 +1,40 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
-
 import { requireUserId } from "~/session.server";
 
 import { addAnnotation } from "~/models/annotations.server";
 import { getNote, getRandomNote } from "~/models/notes2.server";
-import { FIELD_NAMES, validThreshold } from "~/utils/constants";
 import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
+import { FIELD_NAMES, validThreshold } from "~/utils/constants";
 import OmitForms from "~/components/OmitForms";
 
-const propertyName = FIELD_NAMES.victimName;
+const propertyName = FIELD_NAMES.victimSex;
+const validOptions = [
+  { value: "hombre", display: "Hombre" },
+  { value: "mujer", display: "Mujer" },
+];
+
+const inputNames = {
+  sex: "sex",
+  noteId: "noteId",
+};
 
 export async function action({ request }: ActionArgs) {
   const userId = await requireUserId(request);
   const formData = await request.formData();
 
-  const nameString = (formData.get(propertyName)?.toString() ?? "").trim();
-  const noteId = formData.get("noteId")?.toString();
+  const noteId = formData.get(inputNames.noteId)?.toString();
+  const sexString = formData.get(inputNames.sex)?.toString();
 
   // required input
-  if (!noteId || !nameString) {
+  if (!noteId || !sexString) {
     return json(
       {
         errors: {
-          name: !nameString ? "Name is required" : "",
+          sex: !sexString ? "Sex is required" : "",
           request: !noteId ? "Invalid request" : "",
-          code: `name-01`,
+          code: `sex-01`,
         },
       },
       { status: 400 }
@@ -37,20 +45,26 @@ export async function action({ request }: ActionArgs) {
   const note = await getNote({ id: noteId });
   if (!note) {
     return json(
-      { errors: { name: "", request: "Invalid request", code: `name-02` } },
+      { errors: { sex: "", request: "Invalid request", code: `sex-02` } },
       { status: 400 }
     );
   }
 
-  const sanitizeName = (name: string) => {
-    return name.replace(/\s+/g, " ").toLocaleLowerCase();
-  };
+  // check valid inputs
+  if (!validOptions.map((validItem) => validItem.value).includes(sexString)) {
+    return json(
+      {
+        errors: { sex: "Sex value is invalid", request: "", code: `sex-03` },
+      },
+      { status: 400 }
+    );
+  }
 
   const isValidated =
     note.annotations.filter(
       (annotationItem) =>
         annotationItem.propertyName === propertyName &&
-        sanitizeName(annotationItem.value) === sanitizeName(nameString)
+        annotationItem.value === sexString
     ).length >=
     validThreshold - 1; // -1 to account for the current annotation
 
@@ -58,11 +72,11 @@ export async function action({ request }: ActionArgs) {
     userId,
     noteId,
     propertyName: propertyName,
-    value: nameString,
+    value: sexString,
     isValidated,
   });
 
-  return json({ errors: { name: "", request: "", code: "" } }, { status: 200 });
+  return json({ errors: { sex: "", request: "", code: "" } }, { status: 200 });
 }
 
 export async function loader({ request }: LoaderArgs) {
@@ -86,29 +100,44 @@ export default function Age() {
     );
 
   return (
-    <Annotate title="Nombre de la víctima" noteUrls={noteUrls}>
+    <Annotate title="Sexo de la víctima" noteUrls={noteUrls}>
       <div className="flex flex-wrap items-baseline justify-between gap-1">
-        <Form replace reloadDocument method="post">
-          <div className="flex  items-baseline">
-            <label>
-              Nombre de la víctima:
-              <input
-                type="string"
-                name={propertyName}
-                autoFocus
-                required
-                className="ml-2 rounded border border-gray-500 px-1 py-1"
-              />
-            </label>
-            <input name="noteId" type="hidden" required value={noteId} />
+        <div className="mr-2 flex  flex-wrap items-baseline gap-1">
+          <Form
+            replace
+            reloadDocument
+            method="post"
+            className="flex items-baseline"
+          >
+            <fieldset>
+              <legend className="float-left mr-2">Sexo:</legend>
+              {validOptions.map((inputItem) => (
+                <label key={inputItem.value} className="mr-2">
+                  <input
+                    name={inputNames.sex}
+                    type="radio"
+                    value={inputItem.value}
+                    required
+                  />
+                  {inputItem.display}
+                </label>
+              ))}
+            </fieldset>
+
+            <input
+              name={inputNames.noteId}
+              type="hidden"
+              required
+              value={note.id}
+            />
             <button
               type="submit"
               className="ml-2 rounded bg-blue-500 py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400 disabled:opacity-25"
             >
               Guardar
             </button>
-          </div>
-        </Form>
+          </Form>
+        </div>
         <div className="flex">
           <OmitForms noteId={note.id} propertyName={propertyName} />
         </div>

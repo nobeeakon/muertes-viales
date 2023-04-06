@@ -6,18 +6,20 @@ import * as React from "react";
 import { createUserSession, getUserId } from "~/session.server";
 import { verifyLogin } from "~/models/user.server";
 import { safeRedirect, validateEmail } from "~/utils";
+import { getBlockedUserIds } from "~/models/user.server";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
-  if (userId) return redirect("/");
+  if (userId) return redirect("/annotate");
   return json({});
 }
 
 export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
+  const blockedUserIds = await getBlockedUserIds();
   const email = formData.get("email");
   const password = formData.get("password");
-  const redirectTo = safeRedirect(formData.get("redirectTo"), "/notes");
+  const redirectTo = safeRedirect(formData.get("redirectTo"), "/annotate");
   const remember = formData.get("remember");
 
   if (!validateEmail(email)) {
@@ -50,6 +52,18 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
+  if (blockedUserIds.includes(user.id)) {
+    return json(
+      {
+        errors: {
+          email: "Your user has been blocked due to invalid contributions",
+          password: null,
+        },
+      },
+      { status: 403 }
+    );
+  }
+
   return createUserSession({
     request,
     userId: user.id,
@@ -66,7 +80,7 @@ export const meta: MetaFunction = () => {
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirectTo") || "/notes";
+  const redirectTo = searchParams.get("redirectTo") || "/annotate";
   const actionData = useActionData<typeof action>();
   const emailRef = React.useRef<HTMLInputElement>(null);
   const passwordRef = React.useRef<HTMLInputElement>(null);
