@@ -2,7 +2,7 @@ import { createCookieSessionStorage, redirect } from "@remix-run/node";
 import invariant from "tiny-invariant";
 
 import type { User } from "~/models/user.server";
-import { getUserById } from "~/models/user.server";
+import { getUserById, getBlockedUserIds } from "~/models/user.server";
 
 invariant(process.env.SESSION_SECRET, "SESSION_SECRET must be set");
 
@@ -54,11 +54,13 @@ export async function requireUserId(
   return userId;
 }
 
+/** Validates user and checks if is not blocked, otherwise logout */
 export async function requireUser(request: Request) {
   const userId = await requireUserId(request);
+  const blockedUserIds = await getBlockedUserIds();
 
   const user = await getUserById(userId);
-  if (user) return user;
+  if (user && !blockedUserIds.includes(user.id)) return user;
 
   throw await logout(request);
 }

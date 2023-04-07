@@ -60,10 +60,12 @@ export function getUserNotes({ userId }: { userId: User["id"] }) {
 
 export async function createNote({
   userId,
+  customId,
   urls,
 }: {
   userId: User["id"];
   urls: Array<NoteUrl["url"]>;
+  customId?: Note2['customId'];
 }) {
   const { id } = await prisma.note2.create({
     data: {
@@ -75,6 +77,7 @@ export async function createNote({
       noteUrls: {
         create: urls.map((urlStringItem) => ({ url: urlStringItem })),
       },
+      customId
     },
   });
 
