@@ -25,7 +25,7 @@ function NoteObservations({ noteId, noteObservations }: Props) {
         <button
           onClick={() => setShowForm(true)}
           title="Editar observaciones"
-          className="ml-2  rounded-full border border-blue-500 py-1 px-3 text-gray-500 hover:bg-blue-600 hover:text-white focus:bg-blue-400"
+          className="ml-2 rounded-full py-1 px-3 text-gray-500 hover:bg-blue-600 hover:text-white focus:bg-blue-400"
         >
           <FontAwesomeIcon icon={faPen} className="blue-500" />
         </button>
@@ -58,7 +58,7 @@ function NoteObservations({ noteId, noteObservations }: Props) {
         <button
           type="submit"
           title="Guardar"
-          className="ml-2  rounded-full border border-blue-500 py-1 px-3 text-blue-500 hover:bg-blue-600 hover:text-white focus:bg-blue-400"
+          className="ml-2 rounded-full py-1 px-3 text-blue-500 hover:bg-blue-600 hover:text-white focus:bg-blue-400"
         >
           <FontAwesomeIcon icon={faFloppyDisk} />
         </button>
@@ -66,7 +66,7 @@ function NoteObservations({ noteId, noteObservations }: Props) {
           onClick={() => setShowForm(false)}
           type="button"
           title="Cerrar"
-          className="ml-2  rounded-full border border-blue-500 py-1 px-3 text-gray-500 hover:bg-blue-600 hover:text-white focus:bg-blue-400"
+          className="ml-2 rounded-full  py-1 px-3 text-gray-500 hover:bg-blue-600 hover:text-white focus:bg-blue-400"
         >
           <FontAwesomeIcon icon={faXmark} />
         </button>

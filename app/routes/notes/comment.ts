@@ -43,7 +43,7 @@ export async function action({ request }: ActionArgs) {
     return invalidRequestJsonResponse(2);
   }
 
-  await updateNoteComments(noteId, noteObservations);
+  await updateNoteComments(noteId, noteObservations.trim());
 
   return redirect(redirectTo);
 }
