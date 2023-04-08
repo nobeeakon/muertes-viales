@@ -30,6 +30,9 @@
     "/public/build"
   ],
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.4.0",
+    "@fortawesome/free-solid-svg-icons": "^6.4.0",
+    "@fortawesome/react-fontawesome": "^0.2.0",
     "@prisma/client": "^4.9.0",
     "@remix-run/node": "^1.13.0",
     "@remix-run/react": "^1.13.0",
