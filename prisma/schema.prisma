@@ -36,7 +36,6 @@ model Note {
   title String
   body  String
 
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -49,6 +48,7 @@ model Note2 {
 
   createdAt DateTime @default(now())
 
+  customId String @default("")
 
   comments String @default("")
   isUnavailableCounter Int @default(0)

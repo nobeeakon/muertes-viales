@@ -4,6 +4,7 @@ import { Link } from "@remix-run/react";
 import type { NoteUrl } from "@prisma/client";
 
 import { blockedHosts } from "~/utils/constants";
+import NoteObservations from "~/components/NoteObservations";
 
 const NoMoreToAnnotate = () => (
   <div>
@@ -21,11 +22,21 @@ type Props = {
   title: string;
   /** Note urls */
   noteUrls: NoteUrl[];
+  /** Note id */
+  noteId: string;
+  /** Note observations or comments */
+  noteObservations?: string;
   /** form */
   children: ReactNode;
 };
 
-const Annotate = ({ title, noteUrls, children }: Props) => {
+const Annotate = ({
+  noteId,
+  title,
+  noteUrls,
+  noteObservations,
+  children,
+}: Props) => {
   const [urlIndex, setUrlIndex] = useState(0);
   const [loadedIFrames, setLoadedIFrames] = useState<number[]>([]);
 
@@ -80,6 +91,12 @@ const Annotate = ({ title, noteUrls, children }: Props) => {
         </div>
 
         <div>{children}</div>
+        <div>
+          <NoteObservations
+            noteId={noteId}
+            noteObservations={noteObservations}
+          />
+        </div>
       </div>
       <div className="h-full">
         {noteUrls.map((noteUrlItem, noteUrlIndex) => (

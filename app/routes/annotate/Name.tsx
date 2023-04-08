@@ -11,13 +11,19 @@ import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
 import OmitForms from "~/components/OmitForms";
 
 const propertyName = FIELD_NAMES.victimName;
+const inputNames = {
+  victimName: "victimName",
+  noteId: "noteId",
+};
 
 export async function action({ request }: ActionArgs) {
   const userId = await requireUserId(request);
   const formData = await request.formData();
 
-  const nameString = (formData.get(propertyName)?.toString() ?? "").trim();
-  const noteId = formData.get("noteId")?.toString();
+  const nameString = (
+    formData.get(inputNames.victimName)?.toString() ?? ""
+  ).trim();
+  const noteId = formData.get(inputNames.noteId)?.toString();
 
   // required input
   if (!noteId || !nameString) {
@@ -86,7 +92,12 @@ export default function Age() {
     );
 
   return (
-    <Annotate title="Nombre de la víctima" noteUrls={noteUrls}>
+    <Annotate
+      title="Nombre de la víctima"
+      noteUrls={noteUrls}
+      noteId={noteId}
+      noteObservations={note.comments}
+    >
       <div className="flex flex-wrap items-baseline justify-between gap-1">
         <Form replace reloadDocument method="post">
           <div className="flex  items-baseline">
@@ -94,13 +105,18 @@ export default function Age() {
               Nombre de la víctima:
               <input
                 type="string"
-                name={propertyName}
+                name={inputNames.victimName}
                 autoFocus
                 required
                 className="ml-2 rounded border border-gray-500 px-1 py-1"
               />
             </label>
-            <input name="noteId" type="hidden" required value={noteId} />
+            <input
+              name={inputNames.noteId}
+              type="hidden"
+              required
+              value={noteId}
+            />
             <button
               type="submit"
               className="ml-2 rounded bg-blue-500 py-1 px-3 text-white hover:bg-blue-600 focus:bg-blue-400 disabled:opacity-25"

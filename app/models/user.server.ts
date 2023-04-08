@@ -2,7 +2,7 @@ import type { Password, User } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 import { prisma } from "~/db.server";
-import { omitValidThreshold } from "~/utils/constants";
+import { blockUserDueToInvalidNotesThreshold } from "~/utils/constants";
 
 export type { User } from "@prisma/client";
 
@@ -66,7 +66,7 @@ export async function getBlockedUserIds() {
   const blockedUsers = await prisma.user.findMany({
     where: {
       invalidNotesCounter: {
-        gt: omitValidThreshold,
+        gt: blockUserDueToInvalidNotesThreshold,
       },
     },
     select: {

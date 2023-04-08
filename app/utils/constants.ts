@@ -26,6 +26,7 @@ export const validateFieldName = (
 export const validThreshold = 1;
 export const omitValidThreshold = 2;
 export const notAvailable = "NA";
+export const blockUserDueToInvalidNotesThreshold = 5;
 
 /** list of domains that block iframe, 'www.' is stripped */
 export const blockedHosts = ["lineadirectaportal.com"];

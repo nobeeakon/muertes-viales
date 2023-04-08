@@ -146,7 +146,7 @@ export async function increaseInvalidCounterNote({
   });
 
   if (newInvalidNoteInfoCounter > omitValidThreshold) {
-    // increase invalid notes counter
+    // increase user invalid notes counter
     const userInfoResult = await prisma.user.findFirst({
       where: {
         id: userId,
