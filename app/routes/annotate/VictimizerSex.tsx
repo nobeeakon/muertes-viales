@@ -103,7 +103,12 @@ export default function Age() {
     );
 
   return (
-    <Annotate title="Sexo del victimario" noteUrls={noteUrls}>
+    <Annotate
+      title="Sexo del victimario"
+      noteUrls={noteUrls}
+      noteId={noteId}
+      noteObservations={note.comments}
+    >
       <div className="flex flex-wrap items-baseline justify-between gap-1">
         <div className="mr-2 flex  flex-wrap items-baseline gap-1">
           <Form

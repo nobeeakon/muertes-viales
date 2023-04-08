@@ -65,7 +65,7 @@ export async function createNote({
 }: {
   userId: User["id"];
   urls: Array<NoteUrl["url"]>;
-  customId?: Note2['customId'];
+  customId?: Note2["customId"];
 }) {
   const { id } = await prisma.note2.create({
     data: {
@@ -77,7 +77,7 @@ export async function createNote({
       noteUrls: {
         create: urls.map((urlStringItem) => ({ url: urlStringItem })),
       },
-      customId
+      customId,
     },
   });
 
@@ -133,6 +133,7 @@ export async function getRandomNote(property: FieldsType, userId: string) {
     select: {
       id: true,
       noteUrls: true,
+      comments: true,
     },
     where: {
       id: {
@@ -186,6 +187,7 @@ export async function getRandomNoteHasVictimizerInfo(
     select: {
       id: true,
       noteUrls: true,
+      comments: true,
     },
     where: {
       id: {
@@ -201,6 +203,20 @@ export async function getRandomNoteHasVictimizerInfo(
     },
     orderBy: {
       createdAt: "asc",
+    },
+  });
+}
+
+export async function updateNoteComments(
+  noteId: string,
+  noteObservations: string
+) {
+  return prisma.note2.update({
+    data: {
+      comments: noteObservations,
+    },
+    where: {
+      id: noteId,
     },
   });
 }

@@ -2,7 +2,7 @@ import type { Password, User } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 import { prisma } from "~/db.server";
-import {  blockUserDueToInvalidNotesThreshold } from "~/utils/constants";
+import { blockUserDueToInvalidNotesThreshold } from "~/utils/constants";
 
 export type { User } from "@prisma/client";
 

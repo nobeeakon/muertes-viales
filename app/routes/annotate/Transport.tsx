@@ -118,7 +118,12 @@ export default function Age() {
     );
 
   return (
-    <Annotate title="Modo de transporte de la víctima" noteUrls={noteUrls}>
+    <Annotate
+      title="Modo de transporte de la víctima"
+      noteUrls={noteUrls}
+      noteId={noteId}
+      noteObservations={note.comments}
+    >
       <div className="flex flex-wrap items-baseline justify-between gap-1">
         <div className="mr-2 flex  flex-wrap items-baseline gap-1">
           <Form
@@ -132,7 +137,7 @@ export default function Age() {
               {validOptions.map((inputItem) => (
                 <label key={inputItem.value} className="mr-2">
                   <input
-                    name={propertyName}
+                    name={inputNames.transportation}
                     type="radio"
                     value={inputItem.value}
                     required

@@ -3,6 +3,8 @@ import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { json } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import { requireUserId } from "~/session.server";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faLocationPin } from "@fortawesome/free-solid-svg-icons";
 
 import { addAnnotation } from "~/models/annotations.server";
 import { getNote, getRandomNote } from "~/models/notes2.server";
@@ -144,7 +146,12 @@ export default function Age() {
     );
 
   return (
-    <Annotate title="Ubicación del accidente" noteUrls={noteUrls}>
+    <Annotate
+      title="Ubicación del accidente"
+      noteUrls={noteUrls}
+      noteId={noteId}
+      noteObservations={note.comments}
+    >
       <div className="flex flex-wrap items-baseline justify-between gap-1">
         <div className="mr-2 flex  flex-wrap items-baseline gap-1">
           <div className="mr-3 flex flex-wrap items-baseline gap-2">
@@ -179,8 +186,11 @@ export default function Age() {
                   href={`https://www.google.com/maps/?q=${coordinates.latitude},${coordinates.longitude}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="underline decoration-sky-500"
+                  className="text-blue-500 underline decoration-sky-500"
                 >
+                  <span className="mr-2">
+                    <FontAwesomeIcon icon={faLocationPin} />
+                  </span>
                   Maps
                 </a>
               )}

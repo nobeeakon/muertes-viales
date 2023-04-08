@@ -6,9 +6,9 @@ import { createNote } from "~/models/notes2.server";
 import { requireUserId } from "~/session.server";
 import { validateUrl } from "~/utils";
 
-const fieldNames  =  {
-  noteUrl:  "noteUrl",
-  noteCustomId:  "noteCustomId",
+const fieldNames = {
+  noteUrl: "noteUrl",
+  noteCustomId: "noteCustomId",
 };
 
 const MAX_URLS = 3;
@@ -26,7 +26,7 @@ export async function action({ request }: ActionArgs) {
     )
     .map((urlStringItem) => encodeURI(urlStringItem.toString().trim()));
 
-    const noteCustomId = formData.get(fieldNames.noteCustomId)?.toString().trim();
+  const noteCustomId = formData.get(fieldNames.noteCustomId)?.toString().trim();
 
   if (validUrls.length === 0) {
     return json({ errors: { urls: "Urls is required" } }, { status: 400 });
@@ -83,22 +83,20 @@ export default function NewNotePage() {
           )}
         </fieldset>
       </div>
-<div>
-
-<div className="mt-3">
-
-<label htmlFor="noteIdentifier" className="mb-2">Identificador o clave (Opcional)</label>
-<div>
-
-      <input
-                  name={fieldNames.noteCustomId}
-                  id='noteIdentifier'
-                  className="rounded-md border-2 border-blue-500 px-3 text-lg leading-loose"
-                  />
-                  </div>
-                  </div>
-
-                  </div>
+      <div>
+        <div className="mt-3">
+          <label htmlFor="noteIdentifier" className="mb-2">
+            Identificador o clave (Opcional)
+          </label>
+          <div>
+            <input
+              name={fieldNames.noteCustomId}
+              id="noteIdentifier"
+              className="rounded-md border-2 border-blue-500 px-3 text-lg leading-loose"
+            />
+          </div>
+        </div>
+      </div>
       <div className="text-right">
         <button
           type="submit"

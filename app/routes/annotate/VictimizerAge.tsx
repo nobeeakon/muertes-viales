@@ -21,6 +21,10 @@ const validOptions = [
   { value: "adult", display: "Adulto" },
   { value: "old", display: "3a edad" },
 ];
+const inputNames = {
+  age: "age",
+  noteId: "noteId",
+};
 
 export async function action({ request }: ActionArgs) {
   const userId = await requireUserId(request);
@@ -106,7 +110,12 @@ export default function Age() {
     );
 
   return (
-    <Annotate title="Edad del victimario" noteUrls={noteUrls}>
+    <Annotate
+      title="Edad del victimario"
+      noteUrls={noteUrls}
+      noteId={noteId}
+      noteObservations={note.comments}
+    >
       <div className="flex flex-wrap items-baseline justify-between gap-1">
         <div className="mr-2 flex  flex-wrap items-baseline gap-1">
           <div className="mr-3">
@@ -138,8 +147,13 @@ export default function Age() {
             ))}
           </div>
           <Form replace reloadDocument method="post">
-            <input name={propertyName} type="hidden" required value={age} />
-            <input name="noteId" type="hidden" required value={note.id} />
+            <input name={inputNames.age} type="hidden" required value={age} />
+            <input
+              name={inputNames.noteId}
+              type="hidden"
+              required
+              value={note.id}
+            />
             <button
               type="submit"
               disabled={!age.trim()}

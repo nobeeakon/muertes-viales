@@ -19,12 +19,17 @@ const validOptions = [
   { value: "old", display: "3a edad" },
 ];
 
+const inputNames = {
+  age: "age",
+  noteId: "noteId",
+};
+
 export async function action({ request }: ActionArgs) {
   const userId = await requireUserId(request);
   const formData = await request.formData();
 
-  const ageString = formData.get(propertyName)?.toString();
-  const noteId = formData.get("noteId")?.toString();
+  const ageString = formData.get(inputNames.age)?.toString();
+  const noteId = formData.get(inputNames.noteId)?.toString();
 
   // required input
   if (!noteId || !ageString) {
@@ -103,7 +108,12 @@ export default function Age() {
     );
 
   return (
-    <Annotate title="Edad de la víctima" noteUrls={noteUrls}>
+    <Annotate
+      title="Edad de la víctima"
+      noteUrls={noteUrls}
+      noteId={noteId}
+      noteObservations={note.comments}
+    >
       <div className="flex flex-wrap items-baseline justify-between gap-1">
         <div className="mr-2 flex  flex-wrap items-baseline gap-1">
           <div className="mr-3">
@@ -135,8 +145,13 @@ export default function Age() {
             ))}
           </div>
           <Form replace reloadDocument method="post">
-            <input name={propertyName} type="hidden" required value={age} />
-            <input name="noteId" type="hidden" required value={note.id} />
+            <input name={inputNames.age} type="hidden" required value={age} />
+            <input
+              name={inputNames.noteId}
+              type="hidden"
+              required
+              value={note.id}
+            />
             <button
               type="submit"
               disabled={!age.trim()}
