@@ -5,7 +5,7 @@ export const FIELD_NAMES = {
   victimTransportation: "victimTransportation",
   accidentDate: "accidentDate",
   accidentTime: "accidentTime",
-  coordinates: "coordinates",
+  googleMapsUrl: "googleMapsUrl",
   hasVictimizerInfo: "hasVictimizerInfo",
   victimizerVehicle: "victimizerVehicle",
   victimizerSex: "victimizerSex",

@@ -14,7 +14,7 @@ import { getGoogleMapsCoordiantes, haversineDistance } from "~/utils/utils";
 import { validateUrl } from "~/utils";
 import OmitForms from "~/components/OmitForms";
 
-const propertyName = FIELD_NAMES.coordinates;
+const propertyName = FIELD_NAMES.googleMapsUrl;
 const inputNames = {
   googleMapsUrl: "googleMapsUrl",
 };

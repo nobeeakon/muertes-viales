@@ -8,30 +8,29 @@ import { getBlockedUserIds } from "./user.server";
 export type { Note2 } from "@prisma/client";
 
 export async function getAllValidNotes() {
-  const validatedNotesQueryResult = await prisma.validatedAnnotation.findMany({
-    select: {
-      note2Id: true,
-    },
-    distinct: ["note2Id"],
-  });
-
-  const validatedNoteIds = validatedNotesQueryResult.map(
-    (validatedItem) => validatedItem.note2Id
-  );
+  const blockedUserIds = await getBlockedUserIds();
 
   return prisma.note2.findMany({
     select: {
       id: true,
       createdAt: true,
+      customId: true,
+      comments: true,
       userId: true,
       user: true,
       validatedAnnotations: true,
       noteUrls: true,
     },
     where: {
-      id: {
-        in: validatedNoteIds,
+      userId: {
+        notIn: blockedUserIds,
       },
+      invalidCounter: {
+        lte: omitValidThreshold,
+      },
+    },
+    orderBy: {
+      createdAt: "asc",
     },
   });
 }
@@ -90,8 +89,12 @@ export function deleteNote({ id }: Pick<Note2, "id">) {
   });
 }
 
-function findValidatedNotes(property: FieldsType, userId: string) {
-  return prisma.validatedAnnotation.findMany({
+const getFirstNoteToAnnotate = async (
+  property: FieldsType,
+  userId: string,
+  config?: { inNoteIds: string[] }
+) => {
+  const validatedNotes = await prisma.validatedAnnotation.findMany({
     select: {
       note2Id: true,
     },
@@ -100,10 +103,8 @@ function findValidatedNotes(property: FieldsType, userId: string) {
     },
     distinct: ["note2Id"],
   });
-}
 
-function findUserAnnotatedNotes(property: FieldsType, userId: string) {
-  return prisma.annotation.findMany({
+  const propertyUserAnnotated = await prisma.annotation.findMany({
     select: {
       note2Id: true,
     },
@@ -113,15 +114,6 @@ function findUserAnnotatedNotes(property: FieldsType, userId: string) {
     },
     distinct: ["note2Id"],
   });
-}
-
-/**
- * Get a random note not previously annotated by the current user,
- * this is to prevent a single user to annotate multiple times the same note.
- */
-export async function getRandomNote(property: FieldsType, userId: string) {
-  const validatedNotes = await findValidatedNotes(property, userId);
-  const propertyUserAnnotated = await findUserAnnotatedNotes(property, userId);
   const blockedUserIds = await getBlockedUserIds();
 
   const validatedNoteIds = validatedNotes.map((item) => item.note2Id);
@@ -138,6 +130,7 @@ export async function getRandomNote(property: FieldsType, userId: string) {
     where: {
       id: {
         notIn: [...validatedNoteIds, ...propertyUserAnnotatedNoteIds],
+        in: config?.inNoteIds,
       },
       userId: {
         notIn: blockedUserIds,
@@ -145,11 +138,22 @@ export async function getRandomNote(property: FieldsType, userId: string) {
       isUnavailableCounter: {
         lte: omitValidThreshold,
       },
+      invalidCounter: {
+        lte: omitValidThreshold,
+      },
     },
     orderBy: {
       createdAt: "asc",
     },
   });
+};
+
+/**
+ * Get a random note not previously annotated by the current user,
+ * this is to prevent a single user to annotate multiple times the same note.
+ */
+export async function getRandomNote(property: FieldsType, userId: string) {
+  return getFirstNoteToAnnotate(property, userId);
 }
 
 /**
@@ -160,10 +164,6 @@ export async function getRandomNoteHasVictimizerInfo(
   property: Extract<FieldsType, "victimizerSex" | "victimizerAge">,
   userId: string
 ) {
-  const validatedNotes = await findValidatedNotes(property, userId);
-  const propertyUserAnnotated = await findUserAnnotatedNotes(property, userId);
-  const blockedUserIds = await getBlockedUserIds();
-
   const notesWithVictimizerInfo = await prisma.validatedAnnotation.findMany({
     select: {
       note2Id: true,
@@ -175,35 +175,12 @@ export async function getRandomNoteHasVictimizerInfo(
     distinct: ["note2Id"],
   });
 
-  const validatedNoteIds = validatedNotes.map((item) => item.note2Id);
-  const propertyUserAnnotatedNoteIds = propertyUserAnnotated.map(
-    (item) => item.note2Id
-  );
   const withVictimizerInfoNoteIds = notesWithVictimizerInfo.map(
     (item) => item.note2Id
   );
 
-  return prisma.note2.findFirst({
-    select: {
-      id: true,
-      noteUrls: true,
-      comments: true,
-    },
-    where: {
-      id: {
-        notIn: [...validatedNoteIds, ...propertyUserAnnotatedNoteIds],
-        in: withVictimizerInfoNoteIds,
-      },
-      userId: {
-        notIn: blockedUserIds,
-      },
-      isUnavailableCounter: {
-        lte: omitValidThreshold,
-      },
-    },
-    orderBy: {
-      createdAt: "asc",
-    },
+  return getFirstNoteToAnnotate(property, userId, {
+    inNoteIds: withVictimizerInfoNoteIds,
   });
 }
 

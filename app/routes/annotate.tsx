@@ -53,7 +53,7 @@ export default function NotesPage() {
             {links.map((linkItem) => (
               <li key={linkItem.href}>
                 <NavLink
-                  className={`block border-b p-4 text-xl`}
+                  className={`block border-b p-4 text-xl `}
                   to={linkItem.href}
                 >
                   {linkItem.displayName}

@@ -4,19 +4,33 @@ import { csv } from "~/utils/server/responses";
 
 import { getAllValidNotes } from "~/models/notes2.server";
 import { FIELD_NAMES } from "~/utils/constants";
+import type { FieldsType } from "~/utils/constants";
+import { getGoogleMapsCoordiantes } from "~/utils/utils";
+
+type AnnotatedDataType = {
+  [FieldName in FieldsType]: string;
+};
+
+type GoogleMapsUrlDerivedInfo = {
+  latitude: string;
+  longitude: string;
+};
 
 type DataToCsvType = {
   noteDate: string;
   contributorName: string;
   noteUrls: string;
-  victimName: string;
-  victimSex: string;
-  victimAge: string;
-};
+  noteObservations: string;
+} & AnnotatedDataType &
+  GoogleMapsUrlDerivedInfo;
+
+const CSV_STRING_DELIMITER = `"`;
 
 const urlsToCsvString = (urls: string[]) => {
-  const urlsSeparator = " ||||| ";
-  return urls.join(urlsSeparator);
+  const URLS_SEPARATOR = " ||||| ";
+  return `${CSV_STRING_DELIMITER}${urls.join(
+    URLS_SEPARATOR
+  )}${CSV_STRING_DELIMITER}`;
 };
 
 const dateToCsvString = (date: Date) => {
@@ -28,46 +42,88 @@ const dateToCsvString = (date: Date) => {
 
 export async function loader({ request, params }: LoaderArgs) {
   await requireUserId(request);
-  // TODO limit the dowloads per day
+  // TODO limit the downloads per day
   const notes = await getAllValidNotes();
 
   const fieldsOrder: Array<keyof DataToCsvType> = [
     "noteDate",
     "contributorName",
+    "noteObservations",
     "noteUrls",
     "victimAge",
     "victimName",
     "victimSex",
+    "victimTransportation",
+    "accidentDate",
+    "accidentTime",
+    "googleMapsUrl",
+    "latitude",
+    "longitude",
+    "hasVictimizerInfo",
+    "victimizerVehicle",
+    "victimizerSex",
+    "victimizerAge",
+    "unavailableNote",
   ];
 
   const dataCsv = notes
     .map((noteItem) => {
       const noteDate = noteItem.createdAt;
       const contributorName = noteItem.user.email;
+      const noteObservations = noteItem.comments;
       const noteUrls = noteItem.noteUrls.map((urlItem) => urlItem.url);
-      const victimName =
-        noteItem.validatedAnnotations.find(
-          (validatedItem) =>
-            validatedItem.propertyName === FIELD_NAMES.victimName
-        )?.value ?? "";
-      const victimSex =
-        noteItem.validatedAnnotations.find(
-          (validatedItem) =>
-            validatedItem.propertyName === FIELD_NAMES.victimSex
-        )?.value ?? "";
-      const victimAge =
-        noteItem.validatedAnnotations.find(
-          (validatedItem) =>
-            validatedItem.propertyName === FIELD_NAMES.victimAge
-        )?.value ?? "";
+
+      const validatedPropertiesMap = new Map(
+        noteItem.validatedAnnotations.map((validatedItem) => [
+          validatedItem.propertyName,
+          validatedItem.value,
+        ])
+      );
+
+      const coordinates = getGoogleMapsCoordiantes(
+        validatedPropertiesMap.get(FIELD_NAMES.googleMapsUrl) ?? ""
+      );
+
+      const googleMapsUrlString = !validatedPropertiesMap.get(
+        FIELD_NAMES.googleMapsUrl
+      )
+        ? ""
+        : `${CSV_STRING_DELIMITER}${
+            validatedPropertiesMap.get(FIELD_NAMES.googleMapsUrl) ?? ""
+          }${CSV_STRING_DELIMITER}`;
 
       const noteDataToCsv: DataToCsvType = {
         noteDate: dateToCsvString(noteDate),
         contributorName,
+        noteObservations,
         noteUrls: urlsToCsvString(noteUrls),
-        victimName,
-        victimSex,
-        victimAge,
+
+        victimAge: validatedPropertiesMap.get(FIELD_NAMES.victimAge) ?? "",
+        victimName: validatedPropertiesMap.get(FIELD_NAMES.victimName) ?? "",
+        victimSex: validatedPropertiesMap.get(FIELD_NAMES.victimSex) ?? "",
+        victimTransportation:
+          validatedPropertiesMap.get(FIELD_NAMES.victimTransportation) ?? "",
+
+        accidentDate:
+          validatedPropertiesMap.get(FIELD_NAMES.accidentDate) ?? "",
+        accidentTime:
+          validatedPropertiesMap.get(FIELD_NAMES.accidentTime) ?? "",
+
+        googleMapsUrl: googleMapsUrlString,
+        latitude: coordinates?.latitude.toString() ?? "",
+        longitude: coordinates?.longitude.toString() ?? "",
+
+        hasVictimizerInfo:
+          validatedPropertiesMap.get(FIELD_NAMES.hasVictimizerInfo) ?? "",
+        victimizerVehicle:
+          validatedPropertiesMap.get(FIELD_NAMES.victimizerVehicle) ?? "",
+        victimizerSex:
+          validatedPropertiesMap.get(FIELD_NAMES.victimizerSex) ?? "",
+        victimizerAge:
+          validatedPropertiesMap.get(FIELD_NAMES.victimizerAge) ?? "",
+
+        unavailableNote:
+          validatedPropertiesMap.get(FIELD_NAMES.unavailableNote) ?? "",
       };
 
       return noteDataToCsv;
