@@ -77,7 +77,7 @@ const Annotate = ({
               href={noteUrls[urlIndex].url}
               rel="noreferrer"
               target="_blank"
-              className="animate-[wiggle_1s_ease-in-out_infinite] underline decoration-sky-500"
+              className="underline decoration-sky-500"
             >
               Ve la nota en la página
             </a>

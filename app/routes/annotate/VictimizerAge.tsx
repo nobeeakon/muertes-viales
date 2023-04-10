@@ -30,8 +30,8 @@ export async function action({ request }: ActionArgs) {
   const userId = await requireUserId(request);
   const formData = await request.formData();
 
-  const ageString = formData.get(propertyName)?.toString();
-  const noteId = formData.get("noteId")?.toString();
+  const ageString = formData.get(inputNames.age)?.toString();
+  const noteId = formData.get(inputNames.noteId)?.toString();
 
   // required input
   if (!noteId || !ageString) {
