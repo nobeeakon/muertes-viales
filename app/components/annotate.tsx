@@ -10,7 +10,7 @@ const NoMoreToAnnotate = () => (
   <div>
     <p>
       No hay más notas por anotar.{" "}
-      <Link to="/annotate" className="underline decoration-sky-500">
+      <Link to="/annotate"  className="underline decoration-sky-500">
         Regresar{" "}
       </Link>
     </p>
