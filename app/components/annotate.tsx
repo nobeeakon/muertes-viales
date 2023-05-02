@@ -79,7 +79,7 @@ const Annotate = ({
               target="_blank"
               className="underline decoration-sky-500"
             >
-              Ve la nota en la página
+              Ve la nota en la página 
             </a>
             {isCurrentUrlPossiblyBlocked && (
               <span className="relative flex h-3 w-3">
