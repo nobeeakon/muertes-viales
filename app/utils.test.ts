@@ -18,6 +18,6 @@ test("validateUrl returns true for urls", () => {
 });
 
 test("validateUrl returns false for invalid/incomplete urls", () => {
-  expect(validateUrl("")).toBe(true);
+  expect(validateUrl("")).toBe(false);
   expect(validateUrl("stackoverflow.com")).toBe(true);
 });
