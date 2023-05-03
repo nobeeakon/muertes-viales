@@ -1,4 +1,6 @@
 app = "muertevial-5b99"
+primary_region = "qro"
+
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = [ ]
