@@ -1,138 +1,367 @@
-import { Link } from "@remix-run/react";
+import { Link, Form } from "@remix-run/react";
+import type { ReactNode } from "react";
 
 import { useOptionalUser } from "~/utils";
+import { GithubIcon, Twitter } from "~/components/icons";
+import Biker from "~/assets/biker.png";
+import GirlInComputer from "~/assets/girlInComputer.png";
+import NUMV from "~/assets/NUMV.png";
 
 export default function Index() {
   const user = useOptionalUser();
+
+  const navigation = [
+    {
+      displayName: "Proyecto",
+      url: `https://niunamuertevial.mx/`,
+    },
+  ];
+
+  const FAQS = [
+    {
+      question: "¿Por qué surge este proyecto?",
+      answer: `En noviembre de 2018 un camión de transporte público atropelló y mató en Puebla a Manu, activista y servidor público de movilidad. Al día siguiente, nació este proyecto. Decidimos que para honrar la memoria de todas las víctimas de siniestros de tránsito, nos abocaríamos a reconocer y visibilizar a los peatones y ciclistas atropellados en el país.`,
+    },
+    {
+      question: "¿Qué impacto ha tenido?",
+      answer: ``,
+    },
+    {
+      question: "¿Puedo reutilizar los datos?",
+      answer: `Sí, por favor. Los datos son abiertos, lo que pedimos es que se de el reconocimiento al proyecto.`,
+    },
+  ];
+
   return (
-    <main className="relative min-h-screen bg-white sm:flex sm:items-center sm:justify-center">
-      <div className="relative sm:pb-16 sm:pt-8">
-        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-          <div className="relative shadow-xl sm:overflow-hidden sm:rounded-2xl">
-            <div className="absolute inset-0">
-              <img
-                className="h-full w-full object-cover"
-                src="https://user-images.githubusercontent.com/1500684/157774694-99820c51-8165-4908-a031-34fc371ac0d6.jpg"
-                alt="Sonic Youth On Stage"
-              />
-              <div className="absolute inset-0 bg-[color:rgba(254,204,27,0.5)] mix-blend-multiply" />
-            </div>
-            <div className="relative px-4 pt-16 pb-8 sm:px-6 sm:pt-24 sm:pb-14 lg:px-8 lg:pb-20 lg:pt-32">
-              <h1 className="text-center text-6xl font-extrabold tracking-tight sm:text-8xl lg:text-9xl">
-                <span className="block uppercase text-yellow-500 drop-shadow-md">
-                  Indie Stack
+    <main>
+      <div className="w-full">
+        <nav className="container relative mx-auto flex flex-wrap items-center justify-between p-8 lg:justify-between xl:px-0">
+          <>
+            <div className="flex w-full flex-wrap items-center justify-between lg:w-auto">
+              <Link to="/">
+                <span className="flex items-center space-x-2 text-2xl font-medium text-indigo-500 dark:text-gray-100">
+                  <span>
+                    <img
+                      src={NUMV}
+                      alt="Ni una muerte vial"
+                      width="300"
+                      height="130"
+                      className="w-36"
+                    />
+                  </span>
                 </span>
-              </h1>
-              <p className="mx-auto mt-6 max-w-lg text-center text-xl text-white sm:max-w-3xl">
-                Check the README.md file for instructions on how to get this
-                project deployed.
-              </p>
-              <div className="mx-auto mt-10 max-w-sm sm:flex sm:max-w-none sm:justify-center">
-                {user ? (
-                  <Link
-                    to="/notes"
-                    className="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-yellow-700 shadow-sm hover:bg-yellow-50 sm:px-8"
+              </Link>
+            </div>
+          </>
+
+          <div className="text-center lg:flex lg:items-center">
+            <ul className="flex flex-1 list-none items-center justify-end pt-6 lg:pt-0">
+              {navigation.map((menu) => (
+                <li className="mr-3" key={menu.displayName}>
+                  <a
+                    href={menu.url}
+                    className="inline-block rounded-md px-4 py-2 text-lg font-normal text-gray-800 no-underline hover:text-indigo-500 focus:bg-indigo-100 focus:text-indigo-500 focus:outline-none dark:text-gray-200 dark:focus:bg-gray-800"
                   >
-                    View Notes for {user.email}
-                  </Link>
-                ) : (
-                  <div className="space-y-4 sm:mx-auto sm:inline-grid sm:grid-cols-2 sm:gap-5 sm:space-y-0">
+                    {menu.displayName}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="mr-3 hidden space-x-4 lg:flex">
+            {user ? 
+                   <Form action="/logout" method="post">
+                   <button
+                     type="submit"
+                     className="rounded-md bg-indigo-600 px-6 py-2 text-white md:ml-5"
+                   >
+                     Logout
+                   </button>
+                 </Form>
+            : (
+              <Link
+                to="/login"
+                className="rounded-md bg-indigo-600 px-6 py-2 text-white md:ml-5"
+               
+              >
+                Login
+              </Link>
+            )}
+          </div>
+        </nav>
+      </div>
+
+      <div className="container mx-auto">
+        <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+          <div className="flex flex-wrap mb-11">
+            <div className="flex w-full items-center lg:w-1/2">
+              <div className="mb-8 max-w-2xl">
+                <h1 className="text-4xl font-bold leading-snug tracking-tight text-gray-800 dark:text-white lg:text-4xl lg:leading-tight xl:text-6xl xl:leading-tight">
+                  Las calles son de todos
+                </h1>
+                <p className="py-5 text-xl leading-normal text-gray-500 dark:text-gray-300 lg:text-xl xl:text-2xl">
+                  Visibilizar a las víctimas es la mejor estrategia para
+                  convencer a todos de que lo que sucede no es normal ni
+                  aceptable. ¡No lo normalicemos!
+                </p>
+
+                <div className="flex flex-col items-start space-y-3 sm:flex-row sm:items-center sm:space-x-4 sm:space-y-0">
+                  {user ? (
                     <Link
-                      to="/join"
-                      className="flex items-center justify-center rounded-md border border-transparent bg-white px-4 py-3 text-base font-medium text-yellow-700 shadow-sm hover:bg-yellow-50 sm:px-8"
+                      to="/annotate"
+                      className="rounded-md bg-indigo-600 px-8 py-4 text-center text-lg font-medium text-white "
                     >
-                      Sign up
+                      Mis contribuciones
                     </Link>
+                  ) : (
                     <Link
-                      to="/login"
-                      className="flex items-center justify-center rounded-md bg-yellow-500 px-4 py-3 font-medium text-white hover:bg-yellow-600"
+                      to="/notes"
+                      className="rounded-md bg-indigo-600 px-8 py-4 text-center text-lg font-medium text-white "
                     >
-                      Log In
+                      Regístrate
                     </Link>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-              <a href="https://remix.run">
+            </div>
+            <div className="flex  grow items-center justify-center">
+              <div className="max-w-sm">
                 <img
-                  src="https://user-images.githubusercontent.com/1500684/158298926-e45dafff-3544-4b69-96d6-d3bcc33fc76a.svg"
-                  alt="Remix"
-                  className="mx-auto mt-16 w-full max-w-[12rem] md:max-w-[16rem]"
+                  src={Biker}
+                  width="616"
+                  height="617"
+                  className={"object-cover"}
+                  alt="Ciclista"
+                  loading="eager"
+                  placeholder="blur"
                 />
-              </a>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="mx-auto max-w-7xl py-2 px-4 sm:px-6 lg:px-8">
-          <div className="mt-6 flex flex-wrap justify-center gap-8">
-            {[
-              {
-                src: "https://user-images.githubusercontent.com/1500684/157764397-ccd8ea10-b8aa-4772-a99b-35de937319e1.svg",
-                alt: "Fly.io",
-                href: "https://fly.io",
-              },
-              {
-                src: "https://user-images.githubusercontent.com/1500684/157764395-137ec949-382c-43bd-a3c0-0cb8cb22e22d.svg",
-                alt: "SQLite",
-                href: "https://sqlite.org",
-              },
-              {
-                src: "https://user-images.githubusercontent.com/1500684/157764484-ad64a21a-d7fb-47e3-8669-ec046da20c1f.svg",
-                alt: "Prisma",
-                href: "https://prisma.io",
-              },
-              {
-                src: "https://user-images.githubusercontent.com/1500684/157764276-a516a239-e377-4a20-b44a-0ac7b65c8c14.svg",
-                alt: "Tailwind",
-                href: "https://tailwindcss.com",
-              },
-              {
-                src: "https://user-images.githubusercontent.com/1500684/157764454-48ac8c71-a2a9-4b5e-b19c-edef8b8953d6.svg",
-                alt: "Cypress",
-                href: "https://www.cypress.io",
-              },
-              {
-                src: "https://user-images.githubusercontent.com/1500684/157772386-75444196-0604-4340-af28-53b236faa182.svg",
-                alt: "MSW",
-                href: "https://mswjs.io",
-              },
-              {
-                src: "https://user-images.githubusercontent.com/1500684/157772447-00fccdce-9d12-46a3-8bb4-fac612cdc949.svg",
-                alt: "Vitest",
-                href: "https://vitest.dev",
-              },
-              {
-                src: "https://user-images.githubusercontent.com/1500684/157772662-92b0dd3a-453f-4d18-b8be-9fa6efde52cf.png",
-                alt: "Testing Library",
-                href: "https://testing-library.com",
-              },
-              {
-                src: "https://user-images.githubusercontent.com/1500684/157772934-ce0a943d-e9d0-40f8-97f3-f464c0811643.svg",
-                alt: "Prettier",
-                href: "https://prettier.io",
-              },
-              {
-                src: "https://user-images.githubusercontent.com/1500684/157772990-3968ff7c-b551-4c55-a25c-046a32709a8e.svg",
-                alt: "ESLint",
-                href: "https://eslint.org",
-              },
-              {
-                src: "https://user-images.githubusercontent.com/1500684/157773063-20a0ed64-b9f8-4e0b-9d1e-0b65a3d4a6db.svg",
-                alt: "TypeScript",
-                href: "https://typescriptlang.org",
-              },
-            ].map((img) => (
-              <a
-                key={img.href}
-                href={img.href}
-                className="flex h-16 w-32 justify-center p-1 grayscale transition hover:grayscale-0 focus:grayscale-0"
-              >
-                <img alt={img.alt} src={img.src} className="object-contain" />
-              </a>
-            ))}
+        <div className="container mx-auto mt-4 flex w-full flex-col items-center justify-center p-8 text-center xl:px-0">
+          <h2 className="mt-3 max-w-2xl text-3xl font-bold leading-snug tracking-tight text-gray-800 dark:text-white lg:text-4xl lg:leading-tight">
+            Ayúdanos a visibilizar estos casos
+          </h2>
+          <p className="max-w-2xl py-4 text-lg leading-normal text-gray-500 dark:text-gray-300 lg:text-xl xl:text-xl">
+            Llevamos más de 4 años colectando datos sobre accidentes viales, en
+            este tiempo hemos reunido información sobre cerca de 15000 casos.
+            Obtenemos esta información a partir de notas periodísticas, esto nos
+            lleva tiempo y recursos por lo que te pedimos tu apoyo
+          </p>
+        </div>
+
+        <div className="container mx-auto mb-20 flex flex-wrap p-8 lg:flex-nowrap lg:gap-10 xl:px-0 ">
+          <div className="flex w-full items-center justify-center lg:w-1/2 ">
+            <div>
+              <img
+                src={GirlInComputer}
+                alt="Contibuir"
+                loading="lazy"
+                decoding="async"
+                className="object-cover"
+                style={{ color: "transparent" }}
+                width="521"
+                height="548"
+              />
+            </div>
+          </div>
+          <div className="flex w-full flex-wrap items-center lg:w-1/2 ">
+            <div>
+              <div className="mt-4 flex w-full flex-col">
+                <h3 className="mt-3 max-w-2xl text-3xl font-bold leading-snug tracking-tight text-gray-800 dark:text-white lg:text-4xl lg:leading-tight">
+                  ¿Cómo colaborar?
+                </h3>
+                <p className="max-w-2xl py-4 text-lg leading-normal text-gray-500 dark:text-gray-300 lg:text-xl xl:text-xl">
+                  Este proyecto nace para honrar la memoria de todas las
+                  víctimas de siniestros de tránsito. Nuestro método es simple y
+                  se basa en reunir notas periodísticas y extraer información de
+                  estas.{" "}
+                </p>
+              </div>
+              <div className="mt-5 w-full">
+                <div className="mt-8 flex items-start space-x-3">
+                  <div className="mt-1 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-md bg-indigo-500 ">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                      className="h-7 w-7 text-indigo-50"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-2.625 6c-.54 0-.828.419-.936.634a1.96 1.96 0 00-.189.866c0 .298.059.605.189.866.108.215.395.634.936.634.54 0 .828-.419.936-.634.13-.26.189-.568.189-.866 0-.298-.059-.605-.189-.866-.108-.215-.395-.634-.936-.634zm4.314.634c.108-.215.395-.634.936-.634.54 0 .828.419.936.634.13.26.189.568.189.866 0 .298-.059.605-.189.866-.108.215-.395.634-.936.634-.54 0-.828-.419-.936-.634a1.96 1.96 0 01-.189-.866c0-.298.059-.605.189-.866zm2.023 6.828a.75.75 0 10-1.06-1.06 3.75 3.75 0 01-5.304 0 .75.75 0 00-1.06 1.06 5.25 5.25 0 007.424 0z"
+                        clip-rule="evenodd"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-medium text-gray-800 dark:text-gray-200">
+                      Registrate en esta página
+                    </h4>
+                    <p className="mt-1 text-gray-500 dark:text-gray-400"></p>
+                  </div>
+                </div>
+                <div className="mt-8 flex items-start space-x-3">
+                  <div className="mt-1 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-md bg-indigo-500 ">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                      className="h-7 w-7 text-indigo-50"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M3 6a3 3 0 013-3h12a3 3 0 013 3v12a3 3 0 01-3 3H6a3 3 0 01-3-3V6zm4.5 7.5a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0v-2.25a.75.75 0 01.75-.75zm3.75-1.5a.75.75 0 00-1.5 0v4.5a.75.75 0 001.5 0V12zm2.25-3a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0V9.75A.75.75 0 0113.5 9zm3.75-1.5a.75.75 0 00-1.5 0v9a.75.75 0 001.5 0v-9z"
+                        clip-rule="evenodd"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-medium text-gray-800 dark:text-gray-200">
+                      Ayúdanos a obtener la información
+                    </h4>
+                    <p className="mt-1 text-gray-500 dark:text-gray-400">
+                      Ayúdanos extraer la información de las notas periodísticas
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-8 flex items-start space-x-3">
+                  <div className="mt-1 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-md bg-indigo-500 ">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden="true"
+                      className="h-7 w-7 text-indigo-50"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M12 1.5a.75.75 0 01.75.75V4.5a.75.75 0 01-1.5 0V2.25A.75.75 0 0112 1.5zM5.636 4.136a.75.75 0 011.06 0l1.592 1.591a.75.75 0 01-1.061 1.06l-1.591-1.59a.75.75 0 010-1.061zm12.728 0a.75.75 0 010 1.06l-1.591 1.592a.75.75 0 01-1.06-1.061l1.59-1.591a.75.75 0 011.061 0zm-6.816 4.496a.75.75 0 01.82.311l5.228 7.917a.75.75 0 01-.777 1.148l-2.097-.43 1.045 3.9a.75.75 0 01-1.45.388l-1.044-3.899-1.601 1.42a.75.75 0 01-1.247-.606l.569-9.47a.75.75 0 01.554-.68zM3 10.5a.75.75 0 01.75-.75H6a.75.75 0 010 1.5H3.75A.75.75 0 013 10.5zm14.25 0a.75.75 0 01.75-.75h2.25a.75.75 0 010 1.5H18a.75.75 0 01-.75-.75zm-8.962 3.712a.75.75 0 010 1.061l-1.591 1.591a.75.75 0 11-1.061-1.06l1.591-1.592a.75.75 0 011.06 0z"
+                        clip-rule="evenodd"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-medium text-gray-800 dark:text-gray-200">
+                      Ayúdanos a colectar notas periodísticas
+                    </h4>
+                    <p className="mt-1 text-gray-500 dark:text-gray-400">
+                      Toda la información que generamos parte de notas
+                      periodísticas, ayúdanos a renunirlas.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+
+        <Section
+          title="Agradecimientos"
+          header="Muchas gracias a todos los que han contribuido a obtener la
+          información"
+        >
+          <p>Aquí la lista de personas</p>
+        </Section>
+
+        <Section title="FAQs" header="Preguntas frecuentes">
+          {FAQS.map(({ question, answer }) => (
+            <div key={question}>
+              <p className="px-4 py-3 text-left text-lg text-gray-800">
+                {question}
+              </p>
+              <p className="px-4 pb-2 text-left text-gray-500 dark:text-gray-300">
+                {answer}
+              </p>
+            </div>
+          ))}
+        </Section>
       </div>
+      <footer className="container mx-auto relative sm:pb-16 sm:pt-8">
+   
+        <div>
+          <div className="flex justify-center">
+            <div className="mt-5 flex space-x-5 text-gray-400 dark:text-gray-500">
+              <a
+                href="https://twitter.com/niunamuertevial"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span className="sr-only">Twitter</span>
+                <Twitter />
+              </a>
+            </div>
+          </div>
+          <div className="mt-10 text-center text-sm text-gray-600 dark:text-gray-400">
+            Hecho por <a
+            href="https://twitter.com/nobeeakon"
+            target="_blank"
+            rel="noreferrer"
+            >
+              Daniel Torres.
+              </a>
+               {" "}Con Remix y Tailwind :){" "}
+            <a
+              href="https://github.com/nobeeakon/muertes-viales"
+              target="_blank"
+              rel="noreferrer"
+              className=" text-gray-500 dark:text-gray-400"
+            >
+              <GithubIcon size={20} />
+            </a>
+            .
+          </div>
+
+          <div className="my-5 text-center text-sm text-gray-600 dark:text-gray-400">
+            Ilustraciones de{" "}
+            <a
+              href="https://www.glazestock.com/"
+              target="_blank"
+              rel="noreferrer "
+            >
+              Glazestock
+            </a>
+            , template de{" "}
+            <a
+              href="https://web3templates.com/"
+              target="_blank"
+              rel="noreferrer "
+            >
+              web3templates
+            </a>
+            .
+          </div>
+        </div>
+      </footer>
     </main>
+  );
+}
+
+function Section({
+  title,
+  header,
+  children,
+}: {
+  title: string;
+  header: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="mx-auto mt-4 flex w-full flex-col items-center justify-center p-8 text-center xl:px-0">
+      <div className="text-sm font-bold uppercase tracking-wider text-indigo-600">
+        {title}
+      </div>
+      <h2 className="mt-3 max-w-2xl text-3xl font-bold leading-snug tracking-tight text-gray-800 dark:text-white lg:text-4xl lg:leading-tight">
+        {header}
+      </h2>
+      <div className="max-w-2xl py-4 text-lg leading-normal text-gray-500 dark:text-gray-300 lg:text-xl xl:text-xl">
+        {children}
+      </div>
+    </div>
   );
 }
