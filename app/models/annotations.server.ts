@@ -1,9 +1,10 @@
-import type { User, Note2, Annotation } from "@prisma/client";
+import type { User, Note, Annotation } from "@prisma/client";
 import { prisma } from "~/db.server";
 import type { FieldsType } from "~/utils/constants";
 import { omitValidThreshold } from "~/utils/constants";
+import { getBlockedUserIds } from "./user.server";
 
-export type { Note2 } from "@prisma/client";
+export type { Note } from "@prisma/client";
 
 /**
  * Adds an annotation, and if is validated adds a validation flag.
@@ -17,7 +18,7 @@ export async function addAnnotation({
   isValidated,
 }: {
   userId: User["id"];
-  noteId: Note2["id"];
+  noteId: Note["id"];
   propertyName: FieldsType;
   value: Annotation["value"];
   isValidated: boolean;
@@ -27,7 +28,7 @@ export async function addAnnotation({
       where: {
         propertyName,
         value,
-        note2Id: noteId,
+        noteId: noteId,
       },
     });
 
@@ -36,7 +37,7 @@ export async function addAnnotation({
         data: {
           propertyName,
           value,
-          note2: {
+          note: {
             connect: {
               id: noteId,
             },
@@ -52,7 +53,7 @@ export async function addAnnotation({
     where: {
       propertyName,
       value,
-      note2Id: noteId,
+      noteId: noteId,
       userId,
     },
   });
@@ -68,7 +69,7 @@ export async function addAnnotation({
           id: userId,
         },
       },
-      note2: {
+      note: {
         connect: {
           id: noteId,
         },
@@ -85,10 +86,10 @@ export async function addAnnotation({
 export async function increaseUnavailableCounterNote({
   noteId,
 }: {
-  noteId: Note2["id"];
+  noteId: Note["id"];
 }) {
   // get previous counter
-  const noteInfoResult = await prisma.note2.findFirst({
+  const noteInfoResult = await prisma.note.findFirst({
     where: {
       id: noteId,
     },
@@ -100,7 +101,7 @@ export async function increaseUnavailableCounterNote({
   // note not found
   if (noteInfoResult === null) return;
 
-  return prisma.note2.update({
+  return prisma.note.update({
     data: {
       isUnavailableCounter: noteInfoResult.isUnavailableCounter + 1,
     },
@@ -117,11 +118,11 @@ export async function increaseInvalidCounterNote({
   noteId,
   userId,
 }: {
-  noteId: Note2["id"];
-  userId: Note2["userId"];
+  noteId: Note["id"];
+  userId: Note["userId"];
 }) {
   // get previous counter
-  const noteInfoResult = await prisma.note2.findFirst({
+  const noteInfoResult = await prisma.note.findFirst({
     where: {
       id: noteId,
     },
@@ -136,7 +137,7 @@ export async function increaseInvalidCounterNote({
   const newInvalidNoteInfoCounter = noteInfoResult.invalidCounter + 1;
 
   // update note
-  await prisma.note2.update({
+  await prisma.note.update({
     data: {
       invalidCounter: newInvalidNoteInfoCounter,
     },
@@ -170,4 +171,62 @@ export async function increaseInvalidCounterNote({
   }
 
   return;
+}
+
+export async function getContributors() {
+  const blockedUserIds = await getBlockedUserIds();
+
+  const invalidNotes = await prisma.note.findMany({
+    select: {
+      id: true,
+    },
+    where: {
+      invalidCounter: {
+        gt: omitValidThreshold,
+      },
+    },
+  });
+
+  const invalidNoteIds = invalidNotes.map((noteItem) => noteItem.id);
+
+  const annotators = await prisma.annotation.groupBy({
+    by: ["userId"],
+    _count: {
+      userId: true,
+    },
+    where: {
+      userId: {
+        notIn: blockedUserIds,
+      },
+      noteId: {
+        notIn: invalidNoteIds,
+      },
+    },
+    orderBy: {
+      _count: {
+        userId: "desc",
+      },
+    },
+  });
+
+  const userNames = await prisma.user.findMany({
+    select: {
+      id: true,
+      username: true,
+    },
+    where: {
+      id: {
+        in: annotators.map((userItem) => userItem.userId),
+      },
+    },
+  });
+
+  const annotatorIdsSorted = annotators.map((userItem) => userItem.userId);
+  const usersMap = new Map(
+    userNames.map((userItem) => [userItem.id, userItem.username])
+  );
+
+  return annotatorIdsSorted
+    .map((userId) => usersMap.get(userId))
+    .filter((usernameItem) => usernameItem != null);
 }

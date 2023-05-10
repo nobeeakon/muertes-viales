@@ -1,16 +1,16 @@
-import type { User, Note2, NoteUrl } from "@prisma/client";
+import type { User, Note, NoteUrl } from "@prisma/client";
 
 import { prisma } from "~/db.server";
 import { FIELD_NAMES, omitValidThreshold } from "~/utils/constants";
 import type { FieldsType } from "~/utils/constants";
 import { getBlockedUserIds } from "./user.server";
 
-export type { Note2 } from "@prisma/client";
+export type { Note } from "@prisma/client";
 
 export async function getAllValidNotes() {
   const blockedUserIds = await getBlockedUserIds();
 
-  return prisma.note2.findMany({
+  return prisma.note.findMany({
     select: {
       id: true,
       createdAt: true,
@@ -35,8 +35,8 @@ export async function getAllValidNotes() {
   });
 }
 
-export function getNote({ id }: Pick<Note2, "id">) {
-  return prisma.note2.findFirst({
+export function getNote({ id }: Pick<Note, "id">) {
+  return prisma.note.findFirst({
     include: {
       noteUrls: true,
       annotations: true,
@@ -49,7 +49,7 @@ export function getNote({ id }: Pick<Note2, "id">) {
 }
 
 export function getUserNotes({ userId }: { userId: User["id"] }) {
-  return prisma.note2.findMany({
+  return prisma.note.findMany({
     where: { userId: userId },
     include: {
       noteUrls: true,
@@ -64,9 +64,9 @@ export async function createNote({
 }: {
   userId: User["id"];
   urls: Array<NoteUrl["url"]>;
-  customId?: Note2["customId"];
+  customId?: Note["customId"];
 }) {
-  const { id } = await prisma.note2.create({
+  const { id } = await prisma.note.create({
     data: {
       user: {
         connect: {
@@ -83,8 +83,8 @@ export async function createNote({
   return id;
 }
 
-export function deleteNote({ id }: Pick<Note2, "id">) {
-  return prisma.note2.deleteMany({
+export function deleteNote({ id }: Pick<Note, "id">) {
+  return prisma.note.deleteMany({
     where: { id },
   });
 }
@@ -96,32 +96,32 @@ const getFirstNoteToAnnotate = async (
 ) => {
   const validatedNotes = await prisma.validatedAnnotation.findMany({
     select: {
-      note2Id: true,
+      noteId: true,
     },
     where: {
       propertyName: property,
     },
-    distinct: ["note2Id"],
+    distinct: ["noteId"],
   });
 
   const propertyUserAnnotated = await prisma.annotation.findMany({
     select: {
-      note2Id: true,
+      noteId: true,
     },
     where: {
       propertyName: property,
       userId,
     },
-    distinct: ["note2Id"],
+    distinct: ["noteId"],
   });
   const blockedUserIds = await getBlockedUserIds();
 
-  const validatedNoteIds = validatedNotes.map((item) => item.note2Id);
+  const validatedNoteIds = validatedNotes.map((item) => item.noteId);
   const propertyUserAnnotatedNoteIds = propertyUserAnnotated.map(
-    (item) => item.note2Id
+    (item) => item.noteId
   );
 
-  return prisma.note2.findFirst({
+  return prisma.note.findFirst({
     select: {
       id: true,
       noteUrls: true,
@@ -166,17 +166,17 @@ export async function getRandomNoteHasVictimizerInfo(
 ) {
   const notesWithVictimizerInfo = await prisma.validatedAnnotation.findMany({
     select: {
-      note2Id: true,
+      noteId: true,
     },
     where: {
       propertyName: FIELD_NAMES.hasVictimizerInfo,
       value: true.toString(),
     },
-    distinct: ["note2Id"],
+    distinct: ["noteId"],
   });
 
   const withVictimizerInfoNoteIds = notesWithVictimizerInfo.map(
-    (item) => item.note2Id
+    (item) => item.noteId
   );
 
   return getFirstNoteToAnnotate(property, userId, {
@@ -188,7 +188,7 @@ export async function updateNoteComments(
   noteId: string,
   noteObservations: string
 ) {
-  return prisma.note2.update({
+  return prisma.note.update({
     data: {
       comments: noteObservations,
     },

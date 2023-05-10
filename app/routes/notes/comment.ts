@@ -3,7 +3,7 @@ import { json, redirect } from "@remix-run/node";
 
 import { requireUserId } from "~/session.server";
 
-import { getNote, updateNoteComments } from "~/models/notes2.server";
+import { getNote, updateNoteComments } from "~/models/notes.server";
 
 export const commentFieldNames = {
   noteId: "noteId",

@@ -18,7 +18,8 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
-  const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
+  const username = formData.get("username")?.toString();
+  const redirectTo = safeRedirect(formData.get("redirectTo"), "/annotate");
 
   if (!validateEmail(email)) {
     return json(
@@ -54,7 +55,11 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  const user = await createUser(email, password);
+  const clearedUserName = !username?.trim()
+    ? undefined
+    : username?.slice(0, 40);
+
+  const user = await createUser(email, password, clearedUserName);
 
   return createUserSession({
     request,
@@ -143,6 +148,30 @@ export default function Join() {
             </div>
           </div>
 
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Nombre de usuario (Opcional)
+            </label>
+            <div className="mt-1">
+              <input
+                id="username"
+                name="username"
+                type="text"
+                autoComplete="username"
+                aria-describedby="username-description"
+                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+              />
+              <div
+                className="pt-1 text-sm text-gray-500"
+                id="username-description"
+              >
+                No es necesario que sea tu nombre real
+              </div>
+            </div>
+          </div>
           <input type="hidden" name="redirectTo" value={redirectTo} />
           <button
             type="submit"

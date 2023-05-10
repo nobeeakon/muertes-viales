@@ -8,7 +8,7 @@ import {
   increaseUnavailableCounterNote,
   increaseInvalidCounterNote,
 } from "~/models/annotations.server";
-import { getNote } from "~/models/notes2.server";
+import { getNote } from "~/models/notes.server";
 import {
   omitValidThreshold,
   notAvailable,
