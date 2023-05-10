@@ -15,7 +15,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   password Password?
-  username String @default("Anonimo")
+  username String @default("")
 
   invalidNotesCounter Int @default(0)
   noteUrls Note[]

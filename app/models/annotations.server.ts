@@ -222,12 +222,14 @@ export async function getContributors() {
     },
   });
 
+
   const annotatorIdsSorted = annotators.map((userItem) => userItem.userId);
   const usersMap = new Map(
     userNames.map((userItem) => [userItem.id, userItem.username])
   );
 
+
   return annotatorIdsSorted
     .map((userId) => usersMap.get(userId))
-    .filter(Boolean);
+    .filter(usernameItem => usernameItem != null);
 }

@@ -55,8 +55,9 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
+  const clearedUserName = !username?.trim()?undefined:username?.slice(0,40)
 
-  const user = await createUser(email, password, username?.slice(0,15));
+  const user = await createUser(email, password, clearedUserName);
 
   return createUserSession({
     request,

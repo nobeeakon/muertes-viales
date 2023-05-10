@@ -13,7 +13,12 @@ import NUMV from "~/assets/NUMV.png";
 
 export async function loader({ request }: LoaderArgs) {
   const contributors = await getContributors();
-  return json({userNames: contributors});
+
+
+  const displayUsernames = contributors.map(usernameItem => usernameItem||'Anónimo')
+
+
+  return json({userNames: displayUsernames});
 }
 
 
