@@ -7,7 +7,7 @@ import { useUser } from "~/utils";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request);
-  return json({ });
+  return json({});
 }
 
 export default function NotesPage() {

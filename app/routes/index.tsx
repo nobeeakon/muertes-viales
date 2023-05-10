@@ -1,26 +1,24 @@
 import type { ReactNode } from "react";
-import { Link, Form , useLoaderData} from "@remix-run/react";
+import { Link, Form, useLoaderData } from "@remix-run/react";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 
 import { useOptionalUser } from "~/utils";
 import { GithubIcon, Twitter } from "~/components/icons";
-import {getContributors} from '~/models/annotations.server'
+import { getContributors } from "~/models/annotations.server";
 import Biker from "~/assets/biker.png";
 import GirlInComputer from "~/assets/girlInComputer.png";
 import NUMV from "~/assets/NUMV.png";
 
-
 export async function loader({ request }: LoaderArgs) {
   const contributors = await getContributors();
 
+  const displayUsernames = contributors.map(
+    (usernameItem) => usernameItem || "Anónimo"
+  );
 
-  const displayUsernames = contributors.map(usernameItem => usernameItem||'Anónimo')
-
-
-  return json({userNames: displayUsernames});
+  return json({ userNames: displayUsernames });
 }
-
 
 export default function Index() {
   const user = useOptionalUser();
@@ -281,7 +279,11 @@ export default function Index() {
           header="Muchas gracias a todos los que han contribuido a obtener la
           información"
         >
-          <p>{userNames.length === 0? 'Nombres de colaboradores': userNames.join(', ')}</p>
+          <p>
+            {userNames.length === 0
+              ? "Nombres de colaboradores"
+              : userNames.join(", ")}
+          </p>
         </Section>
 
         <Section title="FAQs" header="Preguntas frecuentes">

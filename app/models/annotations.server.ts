@@ -4,7 +4,7 @@ import type { FieldsType } from "~/utils/constants";
 import { omitValidThreshold } from "~/utils/constants";
 import { getBlockedUserIds } from "./user.server";
 
-export type {  Note } from "@prisma/client";
+export type { Note } from "@prisma/client";
 
 /**
  * Adds an annotation, and if is validated adds a validation flag.
@@ -192,7 +192,7 @@ export async function getContributors() {
   const annotators = await prisma.annotation.groupBy({
     by: ["userId"],
     _count: {
-      userId: true
+      userId: true,
     },
     where: {
       userId: {
@@ -209,7 +209,6 @@ export async function getContributors() {
     },
   });
 
-
   const userNames = await prisma.user.findMany({
     select: {
       id: true,
@@ -222,14 +221,12 @@ export async function getContributors() {
     },
   });
 
-
   const annotatorIdsSorted = annotators.map((userItem) => userItem.userId);
   const usersMap = new Map(
     userNames.map((userItem) => [userItem.id, userItem.username])
   );
 
-
   return annotatorIdsSorted
     .map((userId) => usersMap.get(userId))
-    .filter(usernameItem => usernameItem != null);
+    .filter((usernameItem) => usernameItem != null);
 }

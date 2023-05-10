@@ -55,7 +55,9 @@ export async function action({ request }: ActionArgs) {
     );
   }
 
-  const clearedUserName = !username?.trim()?undefined:username?.slice(0,40)
+  const clearedUserName = !username?.trim()
+    ? undefined
+    : username?.slice(0, 40);
 
   const user = await createUser(email, password, clearedUserName);
 
@@ -162,9 +164,12 @@ export default function Join() {
                 aria-describedby="username-description"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-                <div className="pt-1 text-gray-500 text-sm" id="username-description">
-                 No es necesario que sea tu nombre real 
-                </div>
+              <div
+                className="pt-1 text-sm text-gray-500"
+                id="username-description"
+              >
+                No es necesario que sea tu nombre real
+              </div>
             </div>
           </div>
           <input type="hidden" name="redirectTo" value={redirectTo} />
