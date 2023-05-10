@@ -15,37 +15,33 @@ describe("smoke tests", () => {
 
     cy.visitAndCheck("/");
 
-    cy.findByRole("link", { name: /sign up/i }).click();
+    cy.findByRole("link", { name: /regístrate/i }).click();
 
     cy.findByRole("textbox", { name: /email/i }).type(loginForm.email);
     cy.findByLabelText(/password/i).type(loginForm.password);
     cy.findByRole("button", { name: /create account/i }).click();
 
-    cy.findByRole("link", { name: /notes/i }).click();
-    cy.findByRole("button", { name: /logout/i }).click();
-    cy.findByRole("link", { name: /log in/i });
+    cy.findByRole("link", { name: /anotar/i }).click();
+    cy.findByRole("button", { name: /salir/i }).click();
+    cy.findByRole("link", { name: /ingresar/i });
   });
 
-  it("should allow you to make a note", () => {
+  it("should allow you to add a note", () => {
     const testNote = {
-      title: faker.lorem.words(1),
-      body: faker.lorem.sentences(1),
+      url: "https://www.jornada.com.mx/",
+      customId: faker.lorem.words(1),
     };
     cy.login();
 
     cy.visitAndCheck("/");
 
-    cy.findByRole("link", { name: /notes/i }).click();
-    cy.findByText("No notes yet");
+    cy.findByRole("link", { name: /mis contribuciones/i }).click();
 
-    cy.findByRole("link", { name: /\+ new note/i }).click();
 
-    cy.findByRole("textbox", { name: /title/i }).type(testNote.title);
-    cy.findByRole("textbox", { name: /body/i }).type(testNote.body);
-    cy.findByRole("button", { name: /save/i }).click();
+    cy.findByRole("link", { name: /\+ agregar/i }).click();
 
-    cy.findByRole("button", { name: /delete/i }).click();
-
-    cy.findByText("No notes yet");
+    cy.findByRole("textbox", { name: /url-1/i }).type(testNote.url);
+    cy.findByRole("textbox", { name: /Identificador/i }).type(testNote.customId);
+    cy.findByRole("button", { name: /guardar/i }).click();
   });
 });

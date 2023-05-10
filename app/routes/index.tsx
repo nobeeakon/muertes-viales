@@ -83,7 +83,7 @@ export default function Index() {
             </ul>
           </div>
 
-          <div className="mr-3 hidden space-x-4 lg:flex">
+          <div className="mr-3  space-x-4 lg:flex">
             {user ? (
               <Form action="/logout" method="post">
                 <button

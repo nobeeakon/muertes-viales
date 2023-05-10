@@ -66,6 +66,7 @@ export default function NewNotePage() {
               .fill(null)
               .map((_, index) => (
                 <input
+                  aria-label={`url-${index+1}`}
                   name={fieldNames.noteUrl}
                   key={index}
                   autoFocus={index === 0}
