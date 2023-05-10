@@ -2,7 +2,7 @@ import type { LoaderArgs } from "@remix-run/server-runtime";
 import { requireUserId } from "~/session.server";
 import { csv } from "~/utils/server/responses";
 
-import { getAllValidNotes } from "~/models/notes2.server";
+import { getAllValidNotes } from "~/models/notes.server";
 import { FIELD_NAMES } from "~/utils/constants";
 import type { FieldsType } from "~/utils/constants";
 import { getGoogleMapsCoordiantes } from "~/utils/utils";

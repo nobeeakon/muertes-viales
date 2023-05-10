@@ -7,7 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faLocationPin } from "@fortawesome/free-solid-svg-icons";
 
 import { addAnnotation } from "~/models/annotations.server";
-import { getNote, getRandomNote } from "~/models/notes2.server";
+import { getNote, getRandomNote } from "~/models/notes.server";
 import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
 import { FIELD_NAMES, validThreshold } from "~/utils/constants";
 import { getGoogleMapsCoordiantes, haversineDistance } from "~/utils/utils";

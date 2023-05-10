@@ -1,14 +1,25 @@
-import { Link, Form } from "@remix-run/react";
 import type { ReactNode } from "react";
+import { Link, Form , useLoaderData} from "@remix-run/react";
+import type { LoaderArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
 
 import { useOptionalUser } from "~/utils";
 import { GithubIcon, Twitter } from "~/components/icons";
+import {getContributors} from '~/models/annotations.server'
 import Biker from "~/assets/biker.png";
 import GirlInComputer from "~/assets/girlInComputer.png";
 import NUMV from "~/assets/NUMV.png";
 
+
+export async function loader({ request }: LoaderArgs) {
+  const contributors = await getContributors();
+  return json({userNames: contributors});
+}
+
+
 export default function Index() {
   const user = useOptionalUser();
+  const { userNames } = useLoaderData<typeof loader>();
 
   const navigation = [
     {
@@ -28,7 +39,7 @@ export default function Index() {
     },
     {
       question: "¿Puedo reutilizar los datos?",
-      answer: `Sí, por favor. Los datos son abiertos, lo que pedimos es que se de el reconocimiento al proyecto.`,
+      answer: `Sí, por favor. Los datos son abiertos, lo que pedimos es que se de el reconocimiento al proyecto y nos ayudes a difundirlo.`,
     },
   ];
 
@@ -70,22 +81,21 @@ export default function Index() {
           </div>
 
           <div className="mr-3 hidden space-x-4 lg:flex">
-            {user ? 
-                   <Form action="/logout" method="post">
-                   <button
-                     type="submit"
-                     className="rounded-md bg-indigo-600 px-6 py-2 text-white md:ml-5"
-                   >
-                     Logout
-                   </button>
-                 </Form>
-            : (
+            {user ? (
+              <Form action="/logout" method="post">
+                <button
+                  type="submit"
+                  className="rounded-md bg-indigo-600 px-6 py-2 text-white md:ml-5"
+                >
+                  Cerrar sesión
+                </button>
+              </Form>
+            ) : (
               <Link
                 to="/login"
                 className="rounded-md bg-indigo-600 px-6 py-2 text-white md:ml-5"
-               
               >
-                Login
+                Ingresar
               </Link>
             )}
           </div>
@@ -94,7 +104,7 @@ export default function Index() {
 
       <div className="container mx-auto">
         <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-          <div className="flex flex-wrap mb-11">
+          <div className="mb-11 flex flex-wrap">
             <div className="flex w-full items-center lg:w-1/2">
               <div className="mb-8 max-w-2xl">
                 <h1 className="text-4xl font-bold leading-snug tracking-tight text-gray-800 dark:text-white lg:text-4xl lg:leading-tight xl:text-6xl xl:leading-tight">
@@ -116,7 +126,7 @@ export default function Index() {
                     </Link>
                   ) : (
                     <Link
-                      to="/notes"
+                      to="/join"
                       className="rounded-md bg-indigo-600 px-8 py-4 text-center text-lg font-medium text-white "
                     >
                       Regístrate
@@ -192,9 +202,9 @@ export default function Index() {
                       className="h-7 w-7 text-indigo-50"
                     >
                       <path
-                        fill-rule="evenodd"
+                        fillRule="evenodd"
                         d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-2.625 6c-.54 0-.828.419-.936.634a1.96 1.96 0 00-.189.866c0 .298.059.605.189.866.108.215.395.634.936.634.54 0 .828-.419.936-.634.13-.26.189-.568.189-.866 0-.298-.059-.605-.189-.866-.108-.215-.395-.634-.936-.634zm4.314.634c.108-.215.395-.634.936-.634.54 0 .828.419.936.634.13.26.189.568.189.866 0 .298-.059.605-.189.866-.108.215-.395.634-.936.634-.54 0-.828-.419-.936-.634a1.96 1.96 0 01-.189-.866c0-.298.059-.605.189-.866zm2.023 6.828a.75.75 0 10-1.06-1.06 3.75 3.75 0 01-5.304 0 .75.75 0 00-1.06 1.06 5.25 5.25 0 007.424 0z"
-                        clip-rule="evenodd"
+                        clipRule="evenodd"
                       ></path>
                     </svg>
                   </div>
@@ -217,7 +227,7 @@ export default function Index() {
                       <path
                         fill-rule="evenodd"
                         d="M3 6a3 3 0 013-3h12a3 3 0 013 3v12a3 3 0 01-3 3H6a3 3 0 01-3-3V6zm4.5 7.5a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0v-2.25a.75.75 0 01.75-.75zm3.75-1.5a.75.75 0 00-1.5 0v4.5a.75.75 0 001.5 0V12zm2.25-3a.75.75 0 01.75.75v6.75a.75.75 0 01-1.5 0V9.75A.75.75 0 0113.5 9zm3.75-1.5a.75.75 0 00-1.5 0v9a.75.75 0 001.5 0v-9z"
-                        clip-rule="evenodd"
+                        clipRule="evenodd"
                       ></path>
                     </svg>
                   </div>
@@ -240,9 +250,9 @@ export default function Index() {
                       className="h-7 w-7 text-indigo-50"
                     >
                       <path
-                        fill-rule="evenodd"
+                        fillRule="evenodd"
                         d="M12 1.5a.75.75 0 01.75.75V4.5a.75.75 0 01-1.5 0V2.25A.75.75 0 0112 1.5zM5.636 4.136a.75.75 0 011.06 0l1.592 1.591a.75.75 0 01-1.061 1.06l-1.591-1.59a.75.75 0 010-1.061zm12.728 0a.75.75 0 010 1.06l-1.591 1.592a.75.75 0 01-1.06-1.061l1.59-1.591a.75.75 0 011.061 0zm-6.816 4.496a.75.75 0 01.82.311l5.228 7.917a.75.75 0 01-.777 1.148l-2.097-.43 1.045 3.9a.75.75 0 01-1.45.388l-1.044-3.899-1.601 1.42a.75.75 0 01-1.247-.606l.569-9.47a.75.75 0 01.554-.68zM3 10.5a.75.75 0 01.75-.75H6a.75.75 0 010 1.5H3.75A.75.75 0 013 10.5zm14.25 0a.75.75 0 01.75-.75h2.25a.75.75 0 010 1.5H18a.75.75 0 01-.75-.75zm-8.962 3.712a.75.75 0 010 1.061l-1.591 1.591a.75.75 0 11-1.061-1.06l1.591-1.592a.75.75 0 011.06 0z"
-                        clip-rule="evenodd"
+                        clipRule="evenodd"
                       ></path>
                     </svg>
                   </div>
@@ -266,7 +276,7 @@ export default function Index() {
           header="Muchas gracias a todos los que han contribuido a obtener la
           información"
         >
-          <p>Aquí la lista de personas</p>
+          <p>{userNames.length === 0? 'Nombres de colaboradores': userNames.join(', ')}</p>
         </Section>
 
         <Section title="FAQs" header="Preguntas frecuentes">
@@ -282,8 +292,7 @@ export default function Index() {
           ))}
         </Section>
       </div>
-      <footer className="container mx-auto relative sm:pb-16 sm:pt-8">
-   
+      <footer className="container relative mx-auto sm:pb-16 sm:pt-8">
         <div>
           <div className="flex justify-center">
             <div className="mt-5 flex space-x-5 text-gray-400 dark:text-gray-500">
@@ -298,14 +307,15 @@ export default function Index() {
             </div>
           </div>
           <div className="mt-10 text-center text-sm text-gray-600 dark:text-gray-400">
-            Hecho por <a
-            href="https://twitter.com/nobeeakon"
-            target="_blank"
-            rel="noreferrer"
+            Hecho por{" "}
+            <a
+              href="https://twitter.com/nobeeakon"
+              target="_blank"
+              rel="noreferrer"
             >
               Daniel Torres.
-              </a>
-               {" "}Con Remix y Tailwind :){" "}
+            </a>{" "}
+            Con Remix y Tailwind :){" "}
             <a
               href="https://github.com/nobeeakon/muertes-viales"
               target="_blank"
@@ -326,7 +336,7 @@ export default function Index() {
             >
               Glazestock
             </a>
-            , template de{" "}
+            , template adaptado de{" "}
             <a
               href="https://web3templates.com/"
               target="_blank"

@@ -7,7 +7,7 @@ import { addAnnotation } from "~/models/annotations.server";
 import {
   getNote,
   getRandomNoteHasVictimizerInfo,
-} from "~/models/notes2.server";
+} from "~/models/notes.server";
 import Annotate, { NoMoreToAnnotate } from "~/components/annotate";
 import { FIELD_NAMES, validThreshold } from "~/utils/constants";
 import OmitForms from "~/components/OmitForms";

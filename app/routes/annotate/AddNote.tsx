@@ -2,7 +2,7 @@ import type { ActionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
 
-import { createNote } from "~/models/notes2.server";
+import { createNote } from "~/models/notes.server";
 import { requireUserId } from "~/session.server";
 import { validateUrl } from "~/utils";
 

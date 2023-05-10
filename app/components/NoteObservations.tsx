@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Form } from "@remix-run/react";
-import { commentFieldNames } from "~/routes/notes/comment";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFloppyDisk,
   faPen,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
+import { commentFieldNames } from "~/routes/notes/comment";
 
 type Props = {
   noteId: string;
